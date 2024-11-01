@@ -5,19 +5,111 @@ from bauhaus.utils import count_solutions, likelihood
 # These two lines make sure a faster SAT solver is used.
 from nnf import config
 config.sat_backend = "kissat"
+import random
 
 # Encoding that will store all of your constraints
 E = Encoding()
 
+# TILES = []
+LOCATIONS = []
+LOCATIONS_GRID = {}
+ORIENTATIONS = list('UDLR')
+
+def gen_locations(rows, cols):
+    assert rows == 4, "Our board is a 4 X 4 grid"
+    assert cols == 4, "Our board is a 4 X 4 grid"
+    for row in range(1,rows + 1):
+        LOCATIONS_GRID[row] = {}
+        for col in range(1, cols+1):
+            LOCATIONS.append(f'{row}{col}')
+            LOCATIONS_GRID[row][col] = f'{row}{col}'
+            
+def gen_tiles(rows, cols):
+    assert rows == 4, "Our board is a 4 X 4 grid"
+    assert cols == 4, "Our board is a 4 X 4 grid"
+    for row in range(1,rows + 1):
+        for col in range(1, cols+1):
+            TILES.append(f"t{row}{col}")
+
 # To create propositions, create classes for them first, annotated with "@proposition" and the Encoding
 @proposition(E)
-class BasicPropositions:
+class BasicPropositions:    
 
     def __init__(self, data):
         self.data = data
 
     def _prop_name(self):
         return f"A.{self.data}"
+
+@proposition(E)
+@proposition(E)
+class Tiles:
+    def __init__(self, value, loc):
+        assert loc in LOCATIONS
+        self.loc = loc
+        self.value = value
+    
+    
+@proposition(E)
+class Location:
+    def __init__(self, tile, loc):
+        assert loc in LOCATIONS
+        assert tile in TILES
+        self.tile = tile
+        self.loc = loc
+    def _prop_name(self):
+        return f"({self.tile} @ {self.loc})"
+    
+    
+@proposition(E)
+class EmptyTile:
+    def __init__(self, tile, loc):
+        assert loc in LOCATIONS
+        assert tile in TILES
+        self.tile = tile
+        self.loc = loc
+        
+    def _prop_name(self):
+        return f"({self.tile} is empty @ location {self.loc})"
+
+@proposition(E)
+class CanMerge:
+    def __init__(self, tile, o):
+        assert tile in TILES
+        assert o in ORIENTATIONS
+        self.tile = tile
+        self.o = self.o
+
+
+@proposition(E)        
+class NextTile:
+    def __init__(self,tile, o):
+        assert tile in TILES
+        assert o in ORIENTATIONS
+        self.tile = tile
+        self.o = o
+
+random_val1 = random.randint(0, len(LOCATIONS))
+random_val2 = random.randint(0, len(LOCATIONS))
+
+TILES = [Tiles(2, LOCATIONS[random_val1]), Tiles(2, LOCATIONS[random_val2])]
+
+for location in LOCATIONS:
+    tile_at_props = []
+    for tile in TILES:
+        tile_at_props.append(Location(tile, location))
+    constraint.add_at_most_one(E, tile_at_props)
+
+for location in LOCATIONS:
+    location_at_props = []
+    for tile in TILES:
+        if tile.loc != location:
+            location_at_props.append(Location(tile, location))
+    constraint.add_at_most_one(E, location_at_props)
+    
+
+        
+
 
 
 # Different classes for propositions are useful because this allows for more dynamic constraint creation
