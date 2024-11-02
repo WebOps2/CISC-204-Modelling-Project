@@ -11,27 +11,34 @@ import random
 E = Encoding()
 
 # TILES = []
-LOCATIONS = []
-LOCATIONS_GRID = {}
-ORIENTATIONS = list('UDLR')
 
-def gen_locations(rows, cols):
-    assert rows == 4, "Our board is a 4 X 4 grid"
-    assert cols == 4, "Our board is a 4 X 4 grid"
-    for row in range(1,rows + 1):
-        LOCATIONS_GRID[row] = {}
-        for col in range(1, cols+1):
-            LOCATIONS.append(f'{row}{col}')
-            LOCATIONS_GRID[row][col] = f'{row}{col}'
             
-def gen_tiles(rows, cols):
-    assert rows == 4, "Our board is a 4 X 4 grid"
-    assert cols == 4, "Our board is a 4 X 4 grid"
-    for row in range(1,rows + 1):
-        for col in range(1, cols+1):
-            TILES.append(f"t{row}{col}")
+# def gen_tiles(rows, cols):
+#     assert rows == 4, "Our board is a 4 X 4 grid"
+#     assert cols == 4, "Our board is a 4 X 4 grid"
+#     for row in range(1,rows + 1):
+#         for col in range(1, cols+1):
+#             TILES.append(f"t{row}{col}")
 
 # To create propositions, create classes for them first, annotated with "@proposition" and the Encoding
+
+
+# All our locations stored in an array
+LOCATION = []
+TILE_VALUES = []
+TILE_NAMES = []
+value = 2
+
+# Array of all possible tile values
+while value <= 2048:
+    TILE_VALUES.append(value)
+    value = value * 2
+# Array of all the names of our tiles
+for num in range(1, 17):
+    TILE_NAMES.append(f't{num}')
+for row in range(1, 5):
+    for col in range(1, 5):
+        LOCATION.append(f'{row}{col}')
 @proposition(E)
 class BasicPropositions:    
 
@@ -39,76 +46,58 @@ class BasicPropositions:
         self.data = data
 
     def _prop_name(self):
-        return f"A.{self.data}"
+        return f"{self.data}"
 
 @proposition(E)
-@proposition(E)
-class Tiles:
-    def __init__(self, value, loc):
-        assert loc in LOCATIONS
-        self.loc = loc
+class Tile:
+    def __init__(self, name, value):
+        assert value in TILE_VALUES
+        assert name in TILE_NAMES
+        self.name = name
         self.value = value
+    def _prop_name(self):
+        return f"{self.name}: {self.value}"
+    def __str__(self):
+        return f"{self.name}: {self.value}"
     
-    
-@proposition(E)
 class Location:
     def __init__(self, tile, loc):
-        assert loc in LOCATIONS
         assert tile in TILES
-        self.tile = tile
+        assert loc in LOCATION
         self.loc = loc
+        self.tile = tile
     def _prop_name(self):
-        return f"({self.tile} @ {self.loc})"
+        return f"{self.tile} @ {self.loc}"
+
+
+GRID = []
+TILES = []
+
+for i in range(1, 5):
+    for j in range(1,5):
+        TILES.append(Tile(f'{i}{j}', ''))
+# Generate grid
+for i in range(1, 5):
+    GRID_COLS= []
+    for j in range(1, 5):
+        GRID_COLS.append(Tile(f'{row}{col}', ''))
+    GRID.append(GRID_COLS)
     
+# Randomly give two tiles value of 2  
+for r in range(0, 2):
+    row = random.randint(1, 4)
+    col = random.randint(1, 4)
+    while row == col:
+        row = random.randint(1, 4)
+    GRID[row][col] = Tile(f'{row + 1}{col + 1}', 2)
     
-@proposition(E)
-class EmptyTile:
-    def __init__(self, tile, loc):
-        assert loc in LOCATIONS
-        assert tile in TILES
-        self.tile = tile
-        self.loc = loc
+
+for i in GRID:
+    for j in i:
+        print(str(j))
         
-    def _prop_name(self):
-        return f"({self.tile} is empty @ location {self.loc})"
 
-@proposition(E)
-class CanMerge:
-    def __init__(self, tile, o):
-        assert tile in TILES
-        assert o in ORIENTATIONS
-        self.tile = tile
-        self.o = self.o
-
-
-@proposition(E)        
-class NextTile:
-    def __init__(self,tile, o):
-        assert tile in TILES
-        assert o in ORIENTATIONS
-        self.tile = tile
-        self.o = o
-
-random_val1 = random.randint(0, len(LOCATIONS))
-random_val2 = random.randint(0, len(LOCATIONS))
-
-TILES = [Tiles(2, LOCATIONS[random_val1]), Tiles(2, LOCATIONS[random_val2])]
-
-for location in LOCATIONS:
-    tile_at_props = []
-    for tile in TILES:
-        tile_at_props.append(Location(tile, location))
-    constraint.add_at_most_one(E, tile_at_props)
-
-for location in LOCATIONS:
-    location_at_props = []
-    for tile in TILES:
-        if tile.loc != location:
-            location_at_props.append(Location(tile, location))
-    constraint.add_at_most_one(E, location_at_props)
-    
-
-        
+      
 
 
 
@@ -145,6 +134,15 @@ z = FancyPropositions("z")
 #  This restriction is fairly minimal, and if there is any concern, reach out to the teaching staff to clarify
 #  what the expectations are.
 def example_theory():
+    
+    # For every location at most on tile
+    for location in LOCATION:
+        tile_props = []
+        for tile in TILES:
+            tile_props.append(Location(tile, location))
+        constraint.add_exactly_one(E, tile_props)
+        
+        
     # Add custom constraints by creating formulas with the variables you created. 
     E.add_constraint((a | b) & ~x)
     # Implication
