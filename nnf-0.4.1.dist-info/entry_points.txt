@@ -1,0 +1,2 @@
+[console_scripts]
+pynnf = nnf.cli:main

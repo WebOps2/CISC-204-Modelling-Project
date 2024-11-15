@@ -1,0 +1,15 @@
+bauhaus-1.2.0.dist-info/INSTALLER,sha256=zuuue4knoyJ-UwPPXg8fezS7VCrXJQrAP7zeNuwvFQg,4
+bauhaus-1.2.0.dist-info/LICENSE,sha256=CxEvyW81mAYCNdV8_gwq3kxq17YTnyXnNNV_n3RQiKE,1071
+bauhaus-1.2.0.dist-info/METADATA,sha256=ErRTVc6e9q1GHVDVKhX9lp4O9r35dxmGF1fT83FkxSM,4351
+bauhaus-1.2.0.dist-info/RECORD,,
+bauhaus-1.2.0.dist-info/REQUESTED,sha256=47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU,0
+bauhaus-1.2.0.dist-info/WHEEL,sha256=cVxcB9AmuTcXqmwrtPhNK88dr7IR_b6qagTj0UvIEbY,91
+bauhaus-1.2.0.dist-info/top_level.txt,sha256=0onACpzCUumFJbzoaN_k7-KrGDeiCWG1lk6n59kAN7A,8
+bauhaus/__init__.py,sha256=IJ1d5zHnVReIY-dMHvIR6M9GmS7n8UuiKIyaMGWGFwA,287
+bauhaus/__pycache__/__init__.cpython-312.pyc,,
+bauhaus/__pycache__/constraint_builder.cpython-312.pyc,,
+bauhaus/__pycache__/core.cpython-312.pyc,,
+bauhaus/__pycache__/utils.cpython-312.pyc,,
+bauhaus/constraint_builder.py,sha256=CVpMHo8ZQ-gSGtQkaHbBd0Gha5SabnEHoAww4jsTCG0,16207
+bauhaus/core.py,sha256=h1U_nLuandH1vdnxXtNZ8kIgQ0O6cUba8HodC3TBa9s,30954
+bauhaus/utils.py,sha256=4su-NXytQYL9pVzYSTLeU2mcsHluk4wHS-A42jvlw-g,5337
