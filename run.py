@@ -138,11 +138,8 @@ class RANDOM:
 
 # TODO we have to make sure that (1, 1) cannot be at place other than (1, 1) at any timestep
 
-# TODO when we cannot move some 
+# TODO when we cannot move at least one of the directions, we cannot move in that direction & we make timeStep unchanged
 
-# TODO only one of the directions can be true
-
-# TODO if we are at the edge of the grid, we cannot move in that direction
     
 
 # Different classes for propositions are useful because this allows for more dynamic constraint creation
@@ -168,6 +165,8 @@ class FancyPropositions:
 #  This restriction is fairly minimal, and if there is any concern, reach out to the teaching staff to clarify
 #  what the expectations are.
 def example_theory():
+    
+    # TODO if we are at the edge of the grid, we cannot move in that direction
     
     # if the row number (x) is not 1 and the location above (x, y) is true, then the location (x-1, y) is true
     for timeStep in TIMESTEP:
@@ -210,6 +209,8 @@ def example_theory():
                     E.add_constraint(Location(loc, timeStep))
                 E.add_constraint(~Location(loc, timeStep))
     
+    
+    # TODO only one of the directions can be true at a time
     # we want to make sure that movements are done in exactly 1 out of 4 directions
     for timeStep in TIMESTEP:
             for loc in LOCATION:
