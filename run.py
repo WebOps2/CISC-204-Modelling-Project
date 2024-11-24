@@ -10,16 +10,6 @@ import random
 # Encoding that will store all of your constraints
 E = Encoding()
 
-# TILES = []
-
-            
-# def gen_tiles(rows, cols):
-#     assert rows == 4, "Our board is a 4 X 4 grid"
-#     assert cols == 4, "Our board is a 4 X 4 grid"
-#     for row in range(1,rows + 1):
-#         for col in range(1, cols+1):
-#             TILES.append(f"t{row}{col}")
-
 # To create propositions, create classes for them first, annotated with "@proposition" and the Encoding
 
 # empty 2D array to represent the grid
@@ -27,8 +17,6 @@ GRID = []
 
 # we want to build a 4x4 grid which has 16 locations, the structure of the grid should be a 2D array, with each element being a list of four locations
 # each location is represented by a tuple (x, y) where x is the row number and y is the column number
-# grid has no value we don't care
-# we want to use a for loop to generate the grid
 # for i in range(1, 5):
 #     GRID_COLS= []
 #     for j in range(1, 5):
@@ -36,6 +24,7 @@ GRID = []
 #     GRID.append(GRID_COLS)
 
 # print(GRID)
+# we actually don't need GRID to be filled at this point, we will update it later while doing constraints
 
 # representing timestep
 TIME = 0
@@ -48,7 +37,7 @@ for row in range(1, 5):
         
 ORIENTATION = ['U', 'D', 'L', 'R']
 
-
+@proposition(E)
 class Location:
     def __init__(self, loc, time):
         assert loc in LOCATION
@@ -58,13 +47,17 @@ class Location:
     def _prop_name(self):
         return f"{self.loc} is occupied @ step {self.time}"
 
-
+@proposition(E)
 class ORIENTATION:
     def __init__(self, orientation):
         assert orientation in ORIENTATION
         self.orientation = orientation
     def _prop_name(self):
         return f"{self.orientation}"
+    
+# we want to start the grid with a random location (x, y) being filled 
+# 
+
 
 # TODO make able_to_move of a tuple (x, y) at timestep t a constraint from recursion
 
@@ -72,7 +65,12 @@ class ORIENTATION:
 
 # TODO loc(x,y,t) cannot be both true and false
 
-# TODO 
+# TODO create a constraint moveup(t) that takes in a timestep and returns true if the player has moved at that timestep
+
+# TODO if loc(x,y,t) and moveup(t) are true, then loc(x,y,t+1) is true
+
+# TODO randomly fill one location that is empty (i.e. not in the array GRID) and then update GRID
+
 
 
 @proposition(E)
@@ -128,20 +126,13 @@ for r in range(0, 2):
     GRID[row][col] = Tile(f'{row + 1}{col + 1}', 2)
     
 
-for i in GRID:
-    for j in i:
-        print(str(j))
-        
-
-      
-
-
 
 # Different classes for propositions are useful because this allows for more dynamic constraint creation
 # for propositions within that class. For example, you can enforce that "at least one" of the propositions
 # that are instances of this class must be true by using a @constraint decorator.
 # other options include: at most one, exactly one, at most k, and implies all.
 # For a complete module reference, see https://bauhaus.readthedocs.io/en/latest/bauhaus.html
+
 @constraint.at_least_one(E)
 @proposition(E)
 class FancyPropositions:
