@@ -12,8 +12,14 @@ E = Encoding()
 
 # To create propositions, create classes for them first, annotated with "@proposition" and the Encoding
 
-# empty 2D array to represent the grid
+
+# we want to build a list which has four lists nested in them to represent the grid (each lists are initialized empty)
 GRID = []
+for i in range(1, 5):
+    GRID_COLS= []
+    GRID.append(GRID_COLS)
+
+print(GRID)
 
 # we want to build a 4x4 grid which has 16 locations, the structure of the grid should be a 2D array, with each element being a list of four locations
 # each location is represented by a tuple (x, y) where x is the row number and y is the column number
@@ -58,9 +64,45 @@ class Location:
 class MoveUp:
     def __init__(self, timeStep):
         assert timeStep in TIMESTEP
-        self.time = timeStep
+        self.timeStep = timeStep
     def _prop_name(self):
-        return f"moveUp @ {self.time}"
+        return f"moveUp @ {self.timeStep}"
+    
+@proposition(E)
+class MoveDown:
+    def __init__(self, timeStep):
+        assert timeStep in TIMESTEP
+        self.timeStep = timeStep
+    def _prop_name(self):
+        return f"moveDown @ {self.timeStep}"
+
+@proposition(E)
+class MoveLeft:
+    def __init__(self, timeStep):
+        assert timeStep in TIMESTEP
+        self.timeStep = timeStep
+    def _prop_name(self):
+        return f"moveLeft @ {self.timeStep}"
+
+@proposition(E)
+class MoveRight:
+    def __init__(self, timeStep):
+        assert timeStep in TIMESTEP
+        self.timeStep = timeStep
+    def _prop_name(self):
+        return f"moveRight @ {self.timeStep}"
+
+@proposition(E)
+class AbleToMove:
+    def __init__(self, loc, orientation, timeStep):
+        assert timeStep in TIMESTEP
+        assert loc in LOCATION
+        assert orientation in ORIENTATION
+        self.timeStep = timeStep
+        self.loc = loc
+        self.orientation = orientation
+    def _prop_name(self):
+        return f"{self.loc} canMove along {self.orientation} @ {self.timeStep}"
 
 
 @proposition(E)
@@ -94,27 +136,7 @@ class RANDOM:
 # TODO when a location is filled, we cannot randomly generate something in that location
 
 # TODO we have to make sure that (1, 1) cannot be at place other than (1, 1) at any timestep
-
-
-# for i in range(1, 5):
-#     for j in range(1,5):
-#         TILES.append(Tile(f'{i}{j}', ''))
-# # Generate grid
-# for i in range(1, 5):
-#     GRID_COLS= []
-#     for j in range(1, 5):
-#         GRID_COLS.append(Tile(f'{row}{col}', ''))
-#     GRID.append(GRID_COLS)
     
-# # Randomly give two tiles value of 2  
-# for r in range(0, 2):
-#     row = random.randint(1, 4)
-#     col = random.randint(1, 4)
-#     while row == col:
-#         row = random.randint(1, 4)
-#     GRID[row][col] = Tile(f'{row + 1}{col + 1}', 2)
-    
-
 
 # Different classes for propositions are useful because this allows for more dynamic constraint creation
 # for propositions within that class. For example, you can enforce that "at least one" of the propositions
@@ -140,10 +162,32 @@ class FancyPropositions:
 #  what the expectations are.
 def example_theory():
     
+    # if the row number (x) is not 1 and the location above (x, y) is true, then the location (x-1, y) is true
+    for timeStep in TIMESTEP:
+        for loc in LOCATION:
+            if loc[0] != 1:
+                E.add_constraint(Location(loc, timeStep) & ~Location((loc[0] - 1, loc[1]), timeStep) >> ableToMove(loc, orientation, timeStep))
+        
+            
+    # able_to_move: being able to move is an important thing to know of course, but it may not need to be represented as a proposition. Rather I think it may be better represented as a constraint. A tile is able to move if there is an empty space anywhere along the direction of movement.
+    # essentially we want to determine if the location (x, y) can move in the direction of movement
+    # if the location (x, y) is true and the orientation is up, then the location (x-1, y) is true
+    for timeStep in TIMESTEP:
+        for loc in LOCATION:
+            if loc[0] != 1:
+                E.add_constraint(Location(loc, timeStep) & MoveUp(timeStep) >> Location((loc[0] - 1, loc[1]), timeStep))
+    
+    # we check if at each timeStep location at (x, y) is empty or not            
+    for timeStep in TIMESTEP:
+        for loc in LOCATION:
+            for gridPoint in GRID:
+                if loc in gridPoint:
+                    E.add_constraint(Location(loc, timeStep))
+                E.add_constraint(~Location(loc, timeStep))
+                
     
     
-    
-    
+     
     # For every location at most on tile
     for location in LOCATION:
         tile_props = []
