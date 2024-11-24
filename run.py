@@ -115,7 +115,7 @@ class RANDOM:
     def _prop_name(self):
         return f"{self.loc} randomly filled @ t_{self.time}"
 
-@constraint(E)
+# @constraint(E)
 
 # we want to start the grid with a random location (x, y) being filled 
 # 
@@ -214,44 +214,44 @@ def example_theory():
     # we want to make sure that movements are done in exactly 1 out of 4 directions
     for timeStep in TIMESTEP:
             for loc in LOCATION:
-                E.add_exactly_one(E, MoveUp(timeStep) | MoveDown(timeStep) | MoveLeft(timeStep) | MoveRight(timeStep))
+                constraint.add_exactly_one(E, MoveUp(timeStep) | MoveDown(timeStep) | MoveLeft(timeStep) | MoveRight(timeStep))
                 
                 
-    def Movement():
+    # def Movement():
         #needs to be filled
     
 
         
         
-    # Add custom constraints by creating formulas with the variables you created. 
-    E.add_constraint((a | b) & ~x)
-    # Implication
-    E.add_constraint(y >> z)
-    # Negate a formula
-    E.add_constraint(~(x & y))
-    # You can also add more customized "fancy" constraints. Use case: you don't want to enforce "exactly one"
-    # for every instance of BasicPropositions, but you want to enforce it for a, b, and c.:
-    constraint.add_exactly_one(E, a, b, c)
+    # # Add custom constraints by creating formulas with the variables you created. 
+    # E.add_constraint((a | b) & ~x)
+    # # Implication
+    # E.add_constraint(y >> z)
+    # # Negate a formula
+    # E.add_constraint(~(x & y))
+    # # You can also add more customized "fancy" constraints. Use case: you don't want to enforce "exactly one"
+    # # for every instance of BasicPropositions, but you want to enforce it for a, b, and c.:
+    # constraint.add_exactly_one(E, a, b, c)
 
-    return E
+    # return E
 
 
-if __name__ == "__main__":
+    if __name__ == "__main__":
 
-    T = example_theory()
-    # Don't compile until you're finished adding all your constraints!
-    T = T.compile()
-    # After compilation (and only after), you can check some of the properties
-    # of your model:
-    print("\nSatisfiable: %s" % T.satisfiable())
-    print("# Solutions: %d" % count_solutions(T))
-    print("   Solution: %s" % T.solve())
+        T = example_theory()
+        # Don't compile until you're finished adding all your constraints!
+        T = T.compile()
+        # After compilation (and only after), you can check some of the properties
+        # of your model:
+        print("\nSatisfiable: %s" % T.satisfiable())
+        print("# Solutions: %d" % count_solutions(T))
+        print("   Solution: %s" % T.solve())
 
-    #E.introspect()
-    
-    print("\nVariable likelihoods:")
-    for v,vn in zip([a,b,c,x,y,z], 'abcxyz'):
-        # Ensure that you only send these functions NNF formulas
-        # Literals are compiled to NNF here
-        print(" %s: %.2f" % (vn, likelihood(T, v)))
-    print()
+        #E.introspect()
+        
+        print("\nVariable likelihoods:")
+        # for v,vn in zip([a,b,c,x,y,z], 'abcxyz'):
+            # Ensure that you only send these functions NNF formulas
+            # Literals are compiled to NNF here
+            # print(" %s: %.2f" % (vn, likelihood(T, v)))
+        print()
