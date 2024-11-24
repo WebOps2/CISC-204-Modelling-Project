@@ -109,7 +109,7 @@ class AbleToMove:
 class RANDOM:
     def __init__(self, loc, time):
         assert loc in LOCATION
-        assert time in range(0, 17)
+        assert time in range(0, 16)
         self.loc = loc
         self.time = time
     def _prop_name(self):
