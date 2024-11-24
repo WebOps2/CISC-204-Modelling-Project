@@ -28,7 +28,12 @@ GRID = []
 
 # representing timestep
 TIME = 0
-print(f"t_{TIME}")
+TIMESTEP = []
+for t in range(0, 16):
+    TIMESTEP.append(f"t_{t}")
+    
+print(TIMESTEP)
+
 
 LOCATION = []
 for row in range(1, 5):
@@ -37,93 +42,77 @@ for row in range(1, 5):
         
 ORIENTATION = ['U', 'D', 'L', 'R']
 
+
 @proposition(E)
 class Location:
+    def __init__(self, loc, timeStep):
+        assert loc in LOCATION
+        assert timeStep in TIMESTEP
+        self.loc = loc
+        self.timeStep = timeStep
+    def _prop_name(self):
+        return f"{self.loc} occupied @ {self.timeStep}"
+
+
+@proposition(E)
+class MoveUp:
+    def __init__(self, timeStep):
+        assert timeStep in TIMESTEP
+        self.time = timeStep
+    def _prop_name(self):
+        return f"moveUp @ {self.time}"
+
+
+@proposition(E)
+class RANDOM:
     def __init__(self, loc, time):
         assert loc in LOCATION
         assert time in range(0, 17)
         self.loc = loc
         self.time = time
     def _prop_name(self):
-        return f"{self.loc} is occupied @ step {self.time}"
+        return f"{self.loc} randomly filled @ t_{self.time}"
 
-@proposition(E)
-class ORIENTATION:
-    def __init__(self, orientation):
-        assert orientation in ORIENTATION
-        self.orientation = orientation
-    def _prop_name(self):
-        return f"{self.orientation}"
-    
+@constraint(E)
+
 # we want to start the grid with a random location (x, y) being filled 
 # 
 
 
 # TODO make able_to_move of a tuple (x, y) at timestep t a constraint from recursion
 
-# TODO timestep cannot go back  is a constraint
+# TODO timestep cannot go back is a constraint
 
 # TODO loc(x,y,t) cannot be both true and false
 
 # TODO create a constraint moveup(t) that takes in a timestep and returns true if the player has moved at that timestep
 
-# TODO if loc(x,y,t) and moveup(t) are true, then loc(x,y,t+1) is true
+# TODO if loc(x,y,t) and ORIENTATION(orientation, t) are true, then loc(x,y,t+1) is true
 
 # TODO randomly fill one location that is empty (i.e. not in the array GRID) and then update GRID
 
+# TODO when a location is filled, we cannot randomly generate something in that location
+
+# TODO we have to make sure that (1, 1) cannot be at place other than (1, 1) at any timestep
 
 
-@proposition(E)
-class BasicPropositions:    
-
-    def __init__(self, data):
-        self.data = data
-
-    def _prop_name(self):
-        return f"{self.data}"
-
-@proposition(E)
-class Tile:
-    def __init__(self, name, value):
-        assert value in TILE_VALUES
-        assert name in TILE_NAMES
-        self.name = name
-        self.value = value
-    def _prop_name(self):
-        return f"{self.name}: {self.value}"
-    def __str__(self):
-        return f"{self.name}: {self.value}"
+# for i in range(1, 5):
+#     for j in range(1,5):
+#         TILES.append(Tile(f'{i}{j}', ''))
+# # Generate grid
+# for i in range(1, 5):
+#     GRID_COLS= []
+#     for j in range(1, 5):
+#         GRID_COLS.append(Tile(f'{row}{col}', ''))
+#     GRID.append(GRID_COLS)
     
-class Location:
-    def __init__(self, tile, loc):
-        assert tile in TILES
-        assert loc in LOCATION
-        self.loc = loc
-        self.tile = tile
-    def _prop_name(self):
-        return f"{self.tile} @ {self.loc}"
-
-
-GRID = []
-TILES = []
-
-for i in range(1, 5):
-    for j in range(1,5):
-        TILES.append(Tile(f'{i}{j}', ''))
-# Generate grid
-for i in range(1, 5):
-    GRID_COLS= []
-    for j in range(1, 5):
-        GRID_COLS.append(Tile(f'{row}{col}', ''))
-    GRID.append(GRID_COLS)
-    
-# Randomly give two tiles value of 2  
-for r in range(0, 2):
-    row = random.randint(1, 4)
-    col = random.randint(1, 4)
-    while row == col:
-        row = random.randint(1, 4)
-    GRID[row][col] = Tile(f'{row + 1}{col + 1}', 2)
+# # Randomly give two tiles value of 2  
+# for r in range(0, 2):
+#     row = random.randint(1, 4)
+#     col = random.randint(1, 4)
+#     while row == col:
+#         row = random.randint(1, 4)
+#     GRID[row][col] = Tile(f'{row + 1}{col + 1}', 2)
     
 
 
@@ -143,17 +132,6 @@ class FancyPropositions:
     def _prop_name(self):
         return f"A.{self.data}"
 
-# Call your variables whatever you want
-a = BasicPropositions("a")
-b = BasicPropositions("b")   
-c = BasicPropositions("c")
-d = BasicPropositions("d")
-e = BasicPropositions("e")
-# At least one of these will be true
-x = FancyPropositions("x")
-y = FancyPropositions("y")
-z = FancyPropositions("z")
-
 
 # Build an example full theory for your setting and return it.
 #
@@ -161,6 +139,10 @@ z = FancyPropositions("z")
 #  This restriction is fairly minimal, and if there is any concern, reach out to the teaching staff to clarify
 #  what the expectations are.
 def example_theory():
+    
+    
+    
+    
     
     # For every location at most on tile
     for location in LOCATION:
@@ -194,6 +176,8 @@ if __name__ == "__main__":
     print("# Solutions: %d" % count_solutions(T))
     print("   Solution: %s" % T.solve())
 
+    #E.introspect()
+    
     print("\nVariable likelihoods:")
     for v,vn in zip([a,b,c,x,y,z], 'abcxyz'):
         # Ensure that you only send these functions NNF formulas
