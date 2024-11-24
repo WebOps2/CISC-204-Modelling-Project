@@ -120,6 +120,7 @@ class RANDOM:
 # we want to start the grid with a random location (x, y) being filled 
 # 
 
+# TODO make a function that actually does the movement (at a particular timeStep), after that we add a constriant moveDirection(timeStep) that returns true if the player has moved at that timeStep
 
 # TODO make able_to_move of a tuple (x, y) at timestep t a constraint from recursion
 
@@ -136,6 +137,12 @@ class RANDOM:
 # TODO when a location is filled, we cannot randomly generate something in that location
 
 # TODO we have to make sure that (1, 1) cannot be at place other than (1, 1) at any timestep
+
+# TODO when we cannot move some 
+
+# TODO only one of the directions can be true
+
+# TODO if we are at the edge of the grid, we cannot move in that direction
     
 
 # Different classes for propositions are useful because this allows for more dynamic constraint creation
@@ -166,7 +173,25 @@ def example_theory():
     for timeStep in TIMESTEP:
         for loc in LOCATION:
             if loc[0] != 1:
-                E.add_constraint(Location(loc, timeStep) & ~Location((loc[0] - 1, loc[1]), timeStep) >> ableToMove(loc, orientation, timeStep))
+                E.add_constraint(Location(loc, timeStep) & ~Location((loc[0] - 1, loc[1]), timeStep) >> AbleToMove(loc, 'U', timeStep))
+
+    # if the row number (x) is not 4 and the location below (x, y) is true, then the location (x+1, y) is true
+    for timeStep in TIMESTEP:
+        for loc in LOCATION:
+            if loc[0] != 4:
+                E.add_constraint(Location(loc, timeStep) & ~Location((loc[0] + 1, loc[1]), timeStep) >> AbleToMove(loc, 'D', timeStep))
+    
+    # if the col number (y) is not 1 and the location on the left of (x, y) is true, then the location (x, y-1) is true
+    for timeStep in TIMESTEP:
+        for loc in LOCATION:
+            if loc[1] != 1:
+                E.add_constraint(Location(loc, timeStep) & ~Location((loc[0], loc[1] - 1), timeStep) >> AbleToMove(loc, 'L', timeStep))
+    
+    # if the col number (y) is not 4 and the location on the right of (x, y) is true, then the location (x, y+1) is true
+    for timeStep in TIMESTEP:
+        for loc in LOCATION:
+            if loc[1] != 4:
+                E.add_constraint(Location(loc, timeStep) & ~Location((loc[0], loc[1] + 1), timeStep) >> AbleToMove(loc, 'R', timeStep))
         
             
     # able_to_move: being able to move is an important thing to know of course, but it may not need to be represented as a proposition. Rather I think it may be better represented as a constraint. A tile is able to move if there is an empty space anywhere along the direction of movement.
@@ -184,16 +209,17 @@ def example_theory():
                 if loc in gridPoint:
                     E.add_constraint(Location(loc, timeStep))
                 E.add_constraint(~Location(loc, timeStep))
+    
+    # we want to make sure that movements are done in exactly 1 out of 4 directions
+    for timeStep in TIMESTEP:
+            for loc in LOCATION:
+                E.add_exactly_one(E, MoveUp(timeStep) | MoveDown(timeStep) | MoveLeft(timeStep) | MoveRight(timeStep))
                 
+                
+    def Movement():
+        #needs to be filled
     
-    
-     
-    # For every location at most on tile
-    for location in LOCATION:
-        tile_props = []
-        for tile in TILES:
-            tile_props.append(Location(tile, location))
-        constraint.add_exactly_one(E, tile_props)
+
         
         
     # Add custom constraints by creating formulas with the variables you created. 
