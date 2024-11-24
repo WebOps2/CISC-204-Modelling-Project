@@ -22,23 +22,59 @@ E = Encoding()
 
 # To create propositions, create classes for them first, annotated with "@proposition" and the Encoding
 
+# empty 2D array to represent the grid
+GRID = []
 
-# All our locations stored in an array
+# we want to build a 4x4 grid which has 16 locations, the structure of the grid should be a 2D array, with each element being a list of four locations
+# each location is represented by a tuple (x, y) where x is the row number and y is the column number
+# grid has no value we don't care
+# we want to use a for loop to generate the grid
+# for i in range(1, 5):
+#     GRID_COLS= []
+#     for j in range(1, 5):
+#         GRID_COLS.append((i, j))
+#     GRID.append(GRID_COLS)
+
+# print(GRID)
+
+# representing timestep
+TIME = 0
+print(f"t_{TIME}")
+
 LOCATION = []
-TILE_VALUES = []
-TILE_NAMES = []
-value = 2
-
-# Array of all possible tile values
-while value <= 2048:
-    TILE_VALUES.append(value)
-    value = value * 2
-# Array of all the names of our tiles
-for num in range(1, 17):
-    TILE_NAMES.append(f't{num}')
 for row in range(1, 5):
     for col in range(1, 5):
-        LOCATION.append(f'{row}{col}')
+        LOCATION.append((row, col))
+        
+ORIENTATION = ['U', 'D', 'L', 'R']
+
+
+class Location:
+    def __init__(self, loc, time):
+        assert loc in LOCATION
+        assert time in range(0, 17)
+        self.loc = loc
+        self.time = time
+    def _prop_name(self):
+        return f"{self.loc} is occupied @ step {self.time}"
+
+
+class ORIENTATION:
+    def __init__(self, orientation):
+        assert orientation in ORIENTATION
+        self.orientation = orientation
+    def _prop_name(self):
+        return f"{self.orientation}"
+
+# TODO make able_to_move of a tuple (x, y) at timestep t a constraint from recursion
+
+# TODO timestep cannot go back  is a constraint
+
+# TODO loc(x,y,t) cannot be both true and false
+
+# TODO 
+
+
 @proposition(E)
 class BasicPropositions:    
 
