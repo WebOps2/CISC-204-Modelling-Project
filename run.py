@@ -109,7 +109,7 @@ class AbleToMove:
 
 
 @proposition(E)
-class RANDOM:
+class Random:
     def __init__(self, loc, timeStep):
         assert loc in LOCATION
         assert timeStep in TIMESTEP
@@ -129,21 +129,14 @@ class RANDOM:
 
 # TODO timestep cannot go back is a constraint
 
+# TODO when we cannot move at least one of the directions, we cannot move in that direction & we make timeStep unchanged
+
 # TODO loc(x,y,t) cannot be both true and false
 
 # TODO create a constraint moveup(t) that takes in a timestep and returns true if the player has moved at that timestep
 
-# TODO if loc(x,y,t) and ORIENTATION(orientation, t) are true, then loc(x,y,t+1) is true
-
-# TODO randomly fill one location that is empty (i.e. not in the array GRID) and then update GRID
-
-# TODO when a location is filled, we cannot randomly generate something in that location
-
 # TODO we have to make sure that (1, 1) cannot be at place other than (1, 1) at any timestep
 
-# TODO when we cannot move at least one of the directions, we cannot move in that direction & we make timeStep unchanged
-
-    
 
 # Different classes for propositions are useful because this allows for more dynamic constraint creation
 # for propositions within that class. For example, you can enforce that "at least one" of the propositions
@@ -223,6 +216,8 @@ def example_theory():
     # def Movement():
         #needs to be filled
     
+    
+    # TODO randomly fill one location that is empty (i.e. not in the array GRID) and then update GRID
     def RandomFill():
         # we want to randomly fill a location that is empty
         emptyLoc = []
@@ -238,9 +233,60 @@ def example_theory():
     print(RandomFill())
     # we want to randomly fill a location that is empty at a particular timeStep 
     for timeStep in TIMESTEP:
-        E.add_constraint(RANDOM(RandomFill(), timeStep))
-        
-        
+        E.add_constraint(Random(RandomFill(), timeStep))
+    
+    # we want to make sure that random are mutually exclusive
+    for timeStep in TIMESTEP:
+        randomList = []
+        for loc in LOCATION:
+            if loc in GRID:
+                randomList.append(Random(loc, timeStep))
+        constraint.add_exactly_one(E, randomList)
+    
+    # TODO when a location is filled, we cannot randomly generate something in that location
+    # we want to make sure that ~empty -> ~ random
+    for timeStep in TIMESTEP:
+        for loc in LOCATION:
+            E.add_constraint(~Location(loc, timeStep) >> ~Random(loc, timeStep))
+    
+    
+    
+    
+    
+    
+    
+    
+    # exactly one of the movement happens at a time and gives us a random object
+    for timeStep in TIMESTEP:
+        E.add_constraint(MoveUp(timeStep) | MoveDown(timeStep) | MoveLeft(timeStep) | MoveRight(timeStep) >> Random(RandomFill(), timeStep))
+    
+    
+    # TODO if loc(x,y,t) and ORIENTATION(orientation, t) are true, then loc(x,y,t+1) is true
+    # if we have location(x, y, t_i) and we move up, then we have location(x-1, y, t_(i+1))
+    for timeStep in range(0, 15):
+        for loc in LOCATION:
+            if loc[0] != 1:
+                E.add_constraint(Location(loc, TIMESTEP[timeStep]) & MoveUp(TIMESTEP[timeStep]) >> Location((loc[0] - 1, loc[1]), TIMESTEP[timeStep + 1]))
+    
+    # if we have location(x, y, t_i) and we move down, then we have location(x+1, y, t_(i+1))
+    for timeStep in range(0, 15):
+        for loc in LOCATION:
+            if loc[0] != 4:
+                E.add_constraint(Location(loc, TIMESTEP[timeStep]) & MoveUp(TIMESTEP[timeStep]) >> Location((loc[0] + 1, loc[1]), TIMESTEP[timeStep + 1]))
+                
+    # if we have location(x, y, t_i) and we move left, then we have location(x, y, t_(i+1))
+    for timeStep in range(0, 15):
+        for loc in LOCATION:
+            if loc[1] != 1:
+                E.add_constraint(Location(loc, TIMESTEP[timeStep]) & MoveUp(TIMESTEP[timeStep]) >> Location((loc[0], loc[1] - 1), TIMESTEP[timeStep + 1]))
+    
+    # if we have location(x, y, t_i) and we move right, then we have location(x, y, t_(i+1))
+    for timeStep in range(0, 15):
+        for loc in LOCATION:
+            if loc[1] != 4:
+                E.add_constraint(Location(loc, TIMESTEP[timeStep]) & MoveUp(TIMESTEP[timeStep]) >> Location((loc[0], loc[1] + 1), TIMESTEP[timeStep + 1]))
+    
+    
     # # Add custom constraints by creating formulas with the variables you created. 
     # E.add_constraint((a | b) & ~x)
     # # Implication
@@ -266,7 +312,7 @@ if __name__ == "__main__":
     # print("# Solutions: %d" % count_solutions(T))
     # print("   Solution: %s" % T.solve())
 
-    E.introspect()
+    #E.introspect()
     
     # print("\nVariable likelihoods:")
     # for v,vn in zip([a,b,c,x,y,z], 'abcxyz'):
