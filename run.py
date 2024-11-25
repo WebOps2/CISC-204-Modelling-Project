@@ -6,6 +6,7 @@ from bauhaus.utils import count_solutions, likelihood
 from nnf import config
 config.sat_backend = "kissat"
 import random
+import copy
 
 # Encoding that will store all of your constraints
 E = Encoding()
@@ -16,12 +17,24 @@ E = Encoding()
 # we want to build a list which has four lists nested in them to represent the grid (each lists are initialized empty)
 GRID = []
 
+LOCATION = []
+for row in range(1, 5):
+    for col in range(1, 5):
+        LOCATION.append((row, col))
+        
+ORIENTATION = ['U', 'D', 'L', 'R']
+
+# create a 4x4 grid with all elements initialized to (0, 0)
 for i in range(1, 5):
     GRID_COLS= []
     for j in range(1, 5):
         GRID_COLS.append((0, 0))
     GRID.append(GRID_COLS)
-        
+
+# initialize the board to have 1 tile in it
+tempLoc = random.choice(LOCATION)
+GRID[tempLoc[0]-1][tempLoc[1]-1] = tempLoc
+    
 print(GRID)
 
 # we want to build a 4x4 grid which has 16 locations, the structure of the grid should be a 2D array, with each element being a list of four locations
@@ -36,20 +49,13 @@ print(GRID)
 # we actually don't need GRID to be filled at this point, we will update it later while doing constraints
 
 # representing timestep
-TIME = 0
+AtTime = 0
+
 TIMESTEP = []
 for t in range(0, 16):
     TIMESTEP.append(f"t_{t}")
     
 print(TIMESTEP)
-
-
-LOCATION = []
-for row in range(1, 5):
-    for col in range(1, 5):
-        LOCATION.append((row, col))
-        
-ORIENTATION = ['U', 'D', 'L', 'R']
 
 
 @proposition(E)
@@ -230,10 +236,10 @@ def example_theory():
         
         return randomLoc
         
-    print(RandomFill())
+    # print(RandomFill())
     # we want to randomly fill a location that is empty at a particular timeStep 
-    for timeStep in TIMESTEP:
-        E.add_constraint(Random(RandomFill(), timeStep))
+    # for timeStep in TIMESTEP:
+    #     E.add_constraint(Random(RandomFill(), timeStep))
     
     # we want to make sure that random are mutually exclusive
     for timeStep in TIMESTEP:
@@ -250,10 +256,39 @@ def example_theory():
             E.add_constraint(~Location(loc, timeStep) >> ~Random(loc, timeStep))
     
     
+    def UpMove(x,y):
+        if x == 0 or GRID[x-1][y] != (0, 0):
+            return
+        else:
+            GRID[x-1][y] = GRID[x][y]
+            GRID[x][y] = (0, 0)
+            UpMove(x - 1, y)
     
+    # TODO i fixed the copy issue of the grid here; now we just have to fix the global variable AtTime issue to make this work
+    AtTime = 0
     
+    def Move(orientation):
+        # make a deep copy of the grid for later comparison
+        GridTemp = copy.deepcopy(GRID)
+        
+        if orientation == "U":
+            for x in range(1, 4):
+                for y in range(1, 4):
+                    UpMove(x, y)       
+            if GRID != GridTemp:
+                print("we are in the if statement")
+                # RandomFill()
+                # this version of calling the timeStep does not work!
+                E.add_constraint(Random(RandomFill(), TIMESTEP[AtTime]))
+                E.add_constraint(MoveUp(TIMESTEP[AtTime]))
+                # this version of calling the timeStep work
+                # E.add_constraint(Random(RandomFill(), timeStep))
+                # E.add_constraint(MoveUp(timeStep))
+                # AtTime += 1
+            print('we did not go into the if statement')
     
-    
+    Move("U")
+    print(GRID)
     
     
     # exactly one of the movement happens at a time and gives us a random object
