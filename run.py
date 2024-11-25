@@ -15,10 +15,13 @@ E = Encoding()
 
 # we want to build a list which has four lists nested in them to represent the grid (each lists are initialized empty)
 GRID = []
+
 for i in range(1, 5):
     GRID_COLS= []
+    for j in range(1, 5):
+        GRID_COLS.append((0, 0))
     GRID.append(GRID_COLS)
-
+        
 print(GRID)
 
 # we want to build a 4x4 grid which has 16 locations, the structure of the grid should be a 2D array, with each element being a list of four locations
@@ -107,13 +110,13 @@ class AbleToMove:
 
 @proposition(E)
 class RANDOM:
-    def __init__(self, loc, time):
+    def __init__(self, loc, timeStep):
         assert loc in LOCATION
-        assert time in range(0, 16)
+        assert timeStep in TIMESTEP
         self.loc = loc
-        self.time = time
+        self.timeStep = timeStep
     def _prop_name(self):
-        return f"{self.loc} randomly filled @ t_{self.time}"
+        return f"{self.loc} randomly filled @ t_{self.timeStep}"
 
 # @constraint(E)
 
@@ -220,7 +223,22 @@ def example_theory():
     # def Movement():
         #needs to be filled
     
-
+    def RandomFill():
+        # we want to randomly fill a location that is empty
+        emptyLoc = []
+        for loc in LOCATION:
+            if loc not in GRID:
+                emptyLoc.append(loc)
+        randomLoc = random.choice(emptyLoc)
+        print(randomLoc)
+        GRID[randomLoc[0]-1][randomLoc[1]-1] = randomLoc
+        
+        return randomLoc
+        
+    print(RandomFill())
+    # we want to randomly fill a location that is empty at a particular timeStep 
+    for timeStep in TIMESTEP:
+        E.add_constraint(RANDOM(RandomFill(), timeStep))
         
         
     # # Add custom constraints by creating formulas with the variables you created. 
@@ -233,25 +251,26 @@ def example_theory():
     # # for every instance of BasicPropositions, but you want to enforce it for a, b, and c.:
     # constraint.add_exactly_one(E, a, b, c)
 
-    # return E
+    return E
 
 
-    if __name__ == "__main__":
+if __name__ == "__main__":
 
-        T = example_theory()
-        # Don't compile until you're finished adding all your constraints!
-        T = T.compile()
-        # After compilation (and only after), you can check some of the properties
-        # of your model:
-        print("\nSatisfiable: %s" % T.satisfiable())
-        print("# Solutions: %d" % count_solutions(T))
-        print("   Solution: %s" % T.solve())
+    T = example_theory()
+    # Don't compile until you're finished adding all your constraints!
+    # T = T.compile()
+    print(T)
+    # After compilation (and only after), you can check some of the properties
+    # of your model:
+    # print("\nSatisfiable: %s" % T.satisfiable())
+    # print("# Solutions: %d" % count_solutions(T))
+    # print("   Solution: %s" % T.solve())
 
-        #E.introspect()
-        
-        print("\nVariable likelihoods:")
-        # for v,vn in zip([a,b,c,x,y,z], 'abcxyz'):
-            # Ensure that you only send these functions NNF formulas
-            # Literals are compiled to NNF here
-            # print(" %s: %.2f" % (vn, likelihood(T, v)))
-        print()
+    E.introspect()
+    
+    # print("\nVariable likelihoods:")
+    # for v,vn in zip([a,b,c,x,y,z], 'abcxyz'):
+    #     # Ensure that you only send these functions NNF formulas
+    #     # Literals are compiled to NNF here
+    #     print(" %s: %.2f" % (vn, likelihood(T, v)))
+    print()
