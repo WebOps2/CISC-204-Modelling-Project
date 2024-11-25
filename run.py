@@ -32,8 +32,9 @@ for i in range(1, 5):
     GRID.append(GRID_COLS)
 
 # initialize the board to have 1 tile in it
-tempLoc = random.choice(LOCATION)
-GRID[tempLoc[0]-1][tempLoc[1]-1] = tempLoc
+# tempLoc = random.choice(LOCATION)
+# GRID[tempLoc[0]-1][tempLoc[1]-1] = tempLoc
+GRID[3][1] = (4, 2)
     
 print(GRID)
 
@@ -265,27 +266,29 @@ def example_theory():
             UpMove(x - 1, y)
     
     # TODO i fixed the copy issue of the grid here; now we just have to fix the global variable AtTime issue to make this work
-    AtTime = 0
     
     def Move(orientation):
         # make a deep copy of the grid for later comparison
         GridTemp = copy.deepcopy(GRID)
+        global AtTime
         
         if orientation == "U":
             for x in range(1, 4):
                 for y in range(1, 4):
                     UpMove(x, y)       
             if GRID != GridTemp:
-                print("we are in the if statement")
-                # RandomFill()
-                # this version of calling the timeStep does not work!
                 E.add_constraint(Random(RandomFill(), TIMESTEP[AtTime]))
                 E.add_constraint(MoveUp(TIMESTEP[AtTime]))
                 # this version of calling the timeStep work
-                # E.add_constraint(Random(RandomFill(), timeStep))
-                # E.add_constraint(MoveUp(timeStep))
-                # AtTime += 1
-            print('we did not go into the if statement')
+                AtTime += 1
+            else:
+                E.add_constraint(~MoveUp(TIMESTEP[AtTime]))
+        elif orientation == "D":
+            pass
+        elif orientation == "L":
+            pass
+        elif orientation == "R":
+            pass
     
     Move("U")
     print(GRID)
@@ -301,25 +304,25 @@ def example_theory():
     for timeStep in range(0, 15):
         for loc in LOCATION:
             if loc[0] != 1:
-                E.add_constraint(Location(loc, TIMESTEP[timeStep]) & MoveUp(TIMESTEP[timeStep]) >> Location((loc[0] - 1, loc[1]), TIMESTEP[timeStep + 1]))
+                E.add_constraint(Location(loc, TIMESTEP[timeStep]) & MoveUp(TIMESTEP[timeStep]) >> Location((loc[0] - 1, loc[1]), TIMESTEP[timeStep + 1]) & ~Location(loc, TIMESTEP[timeStep]))
     
     # if we have location(x, y, t_i) and we move down, then we have location(x+1, y, t_(i+1))
     for timeStep in range(0, 15):
         for loc in LOCATION:
             if loc[0] != 4:
-                E.add_constraint(Location(loc, TIMESTEP[timeStep]) & MoveUp(TIMESTEP[timeStep]) >> Location((loc[0] + 1, loc[1]), TIMESTEP[timeStep + 1]))
+                E.add_constraint(Location(loc, TIMESTEP[timeStep]) & MoveUp(TIMESTEP[timeStep]) >> Location((loc[0] + 1, loc[1]), TIMESTEP[timeStep + 1]) & ~Location(loc, TIMESTEP[timeStep]))
                 
     # if we have location(x, y, t_i) and we move left, then we have location(x, y, t_(i+1))
     for timeStep in range(0, 15):
         for loc in LOCATION:
             if loc[1] != 1:
-                E.add_constraint(Location(loc, TIMESTEP[timeStep]) & MoveUp(TIMESTEP[timeStep]) >> Location((loc[0], loc[1] - 1), TIMESTEP[timeStep + 1]))
+                E.add_constraint(Location(loc, TIMESTEP[timeStep]) & MoveUp(TIMESTEP[timeStep]) >> Location((loc[0], loc[1] - 1), TIMESTEP[timeStep + 1]) & ~Location(loc, TIMESTEP[timeStep]))
     
     # if we have location(x, y, t_i) and we move right, then we have location(x, y, t_(i+1))
     for timeStep in range(0, 15):
         for loc in LOCATION:
             if loc[1] != 4:
-                E.add_constraint(Location(loc, TIMESTEP[timeStep]) & MoveUp(TIMESTEP[timeStep]) >> Location((loc[0], loc[1] + 1), TIMESTEP[timeStep + 1]))
+                E.add_constraint(Location(loc, TIMESTEP[timeStep]) & MoveUp(TIMESTEP[timeStep]) >> Location((loc[0], loc[1] + 1), TIMESTEP[timeStep + 1]) & ~Location(loc, TIMESTEP[timeStep]))
     
     
     # # Add custom constraints by creating formulas with the variables you created. 
@@ -340,7 +343,7 @@ if __name__ == "__main__":
     T = example_theory()
     # Don't compile until you're finished adding all your constraints!
     # T = T.compile()
-    print(T)
+    # print(T)
     # After compilation (and only after), you can check some of the properties
     # of your model:
     # print("\nSatisfiable: %s" % T.satisfiable())
