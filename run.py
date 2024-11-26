@@ -258,17 +258,18 @@ def example_theory():
         for loc in LOCATION:
             E.add_constraint(~Location(loc, timeStep) >> ~Random(loc, timeStep))
     
-    
+    # recursive function to move the tile up, also updates the GRID
     def UpMove(x,y):
         if x == 0 or GRID[x-1][y] != (0, 0):
             return
-        else:
-            GRID[x-1][y] = GRID[x][y]
+        
+        if GRID[x][y] != (0, 0):
+            # move the tile up and update its coordinates (only updates the x coordinate)
+            GRID[x-1][y] = (x, GRID[x][y][1]) 
             GRID[x][y] = (0, 0)
+
             UpMove(x - 1, y)
-    
-    # TODO i fixed the copy issue of the grid here; now we just have to fix the global variable AtTime issue to make this work
-    
+
     def Move(orientation):
         # make a deep copy of the grid for later comparison
         GridTemp = copy.deepcopy(GRID)
@@ -277,7 +278,7 @@ def example_theory():
         if orientation == "U":
             for x in range(0, 4):
                 for y in range(0, 4):
-                    UpMove(x, y)       
+                    UpMove(x, y)        
             if GRID != GridTemp:
                 E.add_constraint(Random(RandomFill(), TIMESTEP[AtTime]))
                 E.add_constraint(MoveUp(TIMESTEP[AtTime]))
@@ -293,6 +294,11 @@ def example_theory():
             pass
     
     Move("U")
+    
+    # we want to try move the tiles in a random direction at each timeStep
+    # while AtTime < 16:
+    #     Move(ORIENTATION[random.randint(0, 3)])
+        
     print(GRID)
     
     
