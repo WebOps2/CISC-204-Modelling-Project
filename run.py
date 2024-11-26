@@ -277,11 +277,35 @@ def example_theory():
         
         if GRID[x][y] != (0, 0):
             # move the tile down and update its coordinates (only updates the x coordinate)
-            GRID[x+1][y] = (x, GRID[x][y][1]) 
+            GRID[x+1][y] = (x+2, GRID[x][y][1]) 
             GRID[x][y] = (0, 0)
 
             DownMove(x + 1, y)
+    
+    # recursive function to move the tile left, also updates the GRID
+    def LeftMove(x,y):
+        if y == 0 or GRID[x][y-1] != (0, 0):
+            return
+        
+        if GRID[x][y] != (0, 0):
+            # move the tile left and update its coordinates (only updates the y coordinate)
+            GRID[x][y-1] = (GRID[x][y][0], y) 
+            GRID[x][y] = (0, 0)
 
+            LeftMove(x, y - 1)
+    
+    # recursive function to move the tile right, also updates the GRID
+    def RightMove(x,y):
+        if y == 3 or GRID[x][y+1] != (0, 0):
+            return
+        
+        if GRID[x][y] != (0, 0):
+            # move the tile right and update its coordinates (only updates the y coordinate)
+            GRID[x][y+1] = (GRID[x][y][0], y+2) 
+            GRID[x][y] = (0, 0)
+
+            RightMove(x, y + 1)
+    
     def Move(orientation):
         # make a deep copy of the grid for later comparison
         GridTemp = copy.deepcopy(GRID)
@@ -299,9 +323,10 @@ def example_theory():
             else:
                 E.add_constraint(~MoveUp(TIMESTEP[AtTime]))
         elif orientation == "D":
-            for x in range(0, 4):
-                for y in range(0, 4):
-                    DownMove(x, y)
+            for i in range(0, 3):
+                for x in range(0, 4):
+                    for y in range(0, 4):
+                        DownMove(x, y)
             if GRID != GridTemp:
                 E.add_constraint(Random(RandomFill(), TIMESTEP[AtTime]))
                 E.add_constraint(MoveDown(TIMESTEP[AtTime]))
@@ -309,20 +334,41 @@ def example_theory():
             else:
                 E.add_constraint(~MoveDown(TIMESTEP[AtTime]))
         elif orientation == "L":
-            pass
+            for x in range(0, 4):
+                for y in range(0, 4):
+                    LeftMove(x, y)
+            if GRID != GridTemp:
+                E.add_constraint(Random(RandomFill(), TIMESTEP[AtTime]))
+                E.add_constraint(MoveLeft(TIMESTEP[AtTime]))
+                AtTime += 1
         elif orientation == "R":
-            pass
-    
-    # Move("U")
+            for i in range(0, 3):
+                for x in range(0, 4):
+                    for y in range(0, 4):
+                        RightMove(x, y)
+            if GRID != GridTemp:
+                E.add_constraint(Random(RandomFill(), TIMESTEP[AtTime]))
+                E.add_constraint(MoveRight(TIMESTEP[AtTime]))
+                AtTime += 1
+        
+    print(f"before moving is {GRID}")
+    Move("U")
+    print(f"after moving up is {GRID}")
     Move("D")
+    print(f"after moving down is {GRID}")
+    Move("L")
+    print(f"after moving left is {GRID}")
+    Move("R")
+    print(f"after moving right is {GRID}")
+    print(f"current timeStep is {AtTime}")
     
     # we want to try move the tiles in a random direction at each timeStep
     # while AtTime < 16:
-    #     Move(ORIENTATION[random.randint(0, 3)])
+    #     print(f"before moving at direction is {GRID}")
+    #     randomOrientation = ORIENTATION[random.randint(0, 3)]
+    #     Move(randomOrientation) # this would update AtTime inside the function
+    #     print(f"after moving at direction  is {GRID}")
         
-    print(GRID)
-    
-    
     # exactly one of the movement happens at a time and gives us a random object
     for timeStep in TIMESTEP:
         E.add_constraint(MoveUp(timeStep) | MoveDown(timeStep) | MoveLeft(timeStep) | MoveRight(timeStep) >> Random(RandomFill(), timeStep))
