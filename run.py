@@ -11,9 +11,6 @@ import copy
 # Encoding that will store all of your constraints
 E = Encoding()
 
-# To create propositions, create classes for them first, annotated with "@proposition" and the Encoding
-
-
 # we want to build a list which has four lists nested in them to represent the grid (each lists are initialized empty)
 GRID = []
 
@@ -32,9 +29,9 @@ for i in range(1, 5):
     GRID.append(GRID_COLS)
 
 # initialize the board to have 1 tile in it
-# tempLoc = random.choice(LOCATION)
-# GRID[tempLoc[0]-1][tempLoc[1]-1] = tempLoc
-GRID[3][1] = (4, 2)
+tempLoc = random.choice(LOCATION)
+GRID[tempLoc[0]-1][tempLoc[1]-1] = tempLoc
+# GRID[3][0] = (4, 1)
     
 print(GRID)
 
@@ -176,24 +173,32 @@ def example_theory():
         for loc in LOCATION:
             if loc[0] != 1:
                 E.add_constraint(Location(loc, timeStep) & ~Location((loc[0] - 1, loc[1]), timeStep) >> AbleToMove(loc, 'U', timeStep))
+            elif loc[0] == 1:
+                E.add_constraint(~AbleToMove(loc, 'U', timeStep))
 
     # if the row number (x) is not 4 and the location below (x, y) is true, then the location (x+1, y) is true
     for timeStep in TIMESTEP:
         for loc in LOCATION:
             if loc[0] != 4:
                 E.add_constraint(Location(loc, timeStep) & ~Location((loc[0] + 1, loc[1]), timeStep) >> AbleToMove(loc, 'D', timeStep))
+            elif loc[0] == 4:
+                E.add_constraint(~AbleToMove(loc, 'D', timeStep))
     
     # if the col number (y) is not 1 and the location on the left of (x, y) is true, then the location (x, y-1) is true
     for timeStep in TIMESTEP:
         for loc in LOCATION:
             if loc[1] != 1:
                 E.add_constraint(Location(loc, timeStep) & ~Location((loc[0], loc[1] - 1), timeStep) >> AbleToMove(loc, 'L', timeStep))
+            elif loc[1] == 1:
+                E.add_constraint(~AbleToMove(loc, 'L', timeStep))
     
     # if the col number (y) is not 4 and the location on the right of (x, y) is true, then the location (x, y+1) is true
     for timeStep in TIMESTEP:
         for loc in LOCATION:
             if loc[1] != 4:
                 E.add_constraint(Location(loc, timeStep) & ~Location((loc[0], loc[1] + 1), timeStep) >> AbleToMove(loc, 'R', timeStep))
+            elif loc[1] == 4:
+                E.add_constraint(~AbleToMove(loc, 'R', timeStep))
         
             
     # able_to_move: being able to move is an important thing to know of course, but it may not need to be represented as a proposition. Rather I think it may be better represented as a constraint. A tile is able to move if there is an empty space anywhere along the direction of movement.
@@ -219,9 +224,6 @@ def example_theory():
             for loc in LOCATION:
                 constraint.add_exactly_one(E, MoveUp(timeStep) | MoveDown(timeStep) | MoveLeft(timeStep) | MoveRight(timeStep))
                 
-                
-    # def Movement():
-        #needs to be filled
     
     
     # TODO randomly fill one location that is empty (i.e. not in the array GRID) and then update GRID
@@ -273,8 +275,8 @@ def example_theory():
         global AtTime
         
         if orientation == "U":
-            for x in range(1, 4):
-                for y in range(1, 4):
+            for x in range(0, 4):
+                for y in range(0, 4):
                     UpMove(x, y)       
             if GRID != GridTemp:
                 E.add_constraint(Random(RandomFill(), TIMESTEP[AtTime]))
