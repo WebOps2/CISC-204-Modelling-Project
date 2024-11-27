@@ -148,15 +148,15 @@ class Random:
 # other options include: at most one, exactly one, at most k, and implies all.
 # For a complete module reference, see https://bauhaus.readthedocs.io/en/latest/bauhaus.html
 
-@constraint.at_least_one(E)
-@proposition(E)
-class FancyPropositions:
+# @constraint.at_least_one(E)
+# @proposition(E)
+# class FancyPropositions:
 
-    def __init__(self, data):
-        self.data = data
+#     def __init__(self, data):
+#         self.data = data
 
-    def _prop_name(self):
-        return f"A.{self.data}"
+#     def _prop_name(self):
+#         return f"A.{self.data}"
 
 
 # Build an example full theory for your setting and return it.
@@ -417,13 +417,15 @@ if __name__ == "__main__":
 
     T = example_theory()
     # Don't compile until you're finished adding all your constraints!
-    # T = T.compile()
+    T = T.compile()
+    # S = T.solve()
+    # print(S)
     # print(T)
     # After compilation (and only after), you can check some of the properties
     # of your model:
-    # print("\nSatisfiable: %s" % T.satisfiable())
-    # print("# Solutions: %d" % count_solutions(T))
-    # print("   Solution: %s" % T.solve())
+    print("\nSatisfiable: %s" % T.satisfiable())
+    print("# Solutions: %d" % count_solutions(T))
+    print("   Solution: %s" % T.solve())
 
     #E.introspect()
     
