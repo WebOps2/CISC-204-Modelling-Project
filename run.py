@@ -29,9 +29,9 @@ for i in range(1, 5):
     GRID.append(GRID_COLS)
 
 # initialize the board to have 1 tile in it
-tempLoc = random.choice(LOCATION)
-GRID[tempLoc[0]-1][tempLoc[1]-1] = tempLoc
-# GRID[3][0] = (4, 1)
+# tempLoc = random.choice(LOCATION)
+# GRID[tempLoc[0]-1][tempLoc[1]-1] = tempLoc
+GRID[1][0] = (2, 1)
     
 print(GRID)
 
@@ -57,7 +57,7 @@ print(TIMESTEP)
 
 
 @proposition(E)
-class Location:
+class Location(object):
     def __init__(self, loc, timeStep):
         assert loc in LOCATION
         assert timeStep in TIMESTEP
@@ -68,7 +68,7 @@ class Location:
 
 
 @proposition(E)
-class MoveUp:
+class MoveUp(object):
     def __init__(self, timeStep):
         assert timeStep in TIMESTEP
         self.timeStep = timeStep
@@ -76,7 +76,7 @@ class MoveUp:
         return f"moveUp @ {self.timeStep}"
     
 @proposition(E)
-class MoveDown:
+class MoveDown(object):
     def __init__(self, timeStep):
         assert timeStep in TIMESTEP
         self.timeStep = timeStep
@@ -84,7 +84,7 @@ class MoveDown:
         return f"moveDown @ {self.timeStep}"
 
 @proposition(E)
-class MoveLeft:
+class MoveLeft(object):
     def __init__(self, timeStep):
         assert timeStep in TIMESTEP
         self.timeStep = timeStep
@@ -92,7 +92,7 @@ class MoveLeft:
         return f"moveLeft @ {self.timeStep}"
 
 @proposition(E)
-class MoveRight:
+class MoveRight(object):
     def __init__(self, timeStep):
         assert timeStep in TIMESTEP
         self.timeStep = timeStep
@@ -100,7 +100,7 @@ class MoveRight:
         return f"moveRight @ {self.timeStep}"
 
 @proposition(E)
-class AbleToMove:
+class AbleToMove(object):
     def __init__(self, loc, orientation, timeStep):
         assert timeStep in TIMESTEP
         assert loc in LOCATION
@@ -113,7 +113,7 @@ class AbleToMove:
 
 
 @proposition(E)
-class Random:
+class Random(object):
     def __init__(self, loc, timeStep):
         assert loc in LOCATION
         assert timeStep in TIMESTEP
@@ -148,15 +148,15 @@ class Random:
 # other options include: at most one, exactly one, at most k, and implies all.
 # For a complete module reference, see https://bauhaus.readthedocs.io/en/latest/bauhaus.html
 
-@constraint.at_least_one(E)
-@proposition(E)
-class FancyPropositions:
+# @constraint.at_least_one(E)
+# @proposition(E)
+# class FancyPropositions:
 
-    def __init__(self, data):
-        self.data = data
+#     def __init__(self, data):
+#         self.data = data
 
-    def _prop_name(self):
-        return f"A.{self.data}"
+#     def _prop_name(self):
+#         return f"A.{self.data}"
 
 
 # Build an example full theory for your setting and return it.
@@ -209,24 +209,24 @@ def example_theory():
             if loc[0] != 1:
                 E.add_constraint(Location(loc, timeStep) & MoveUp(timeStep) >> Location((loc[0] - 1, loc[1]), timeStep))
     
-    # we check if at each timeStep location at (x, y) is empty or not            
+    # # we check if at each timeStep location at (x, y) is empty or not            
     for timeStep in TIMESTEP:
-        for loc in LOCATION:
             for gridPoint in GRID:
-                if loc in gridPoint:
-                    E.add_constraint(Location(loc, timeStep))
-                E.add_constraint(~Location(loc, timeStep))
+                for loc in LOCATION:
+                    if loc in gridPoint:
+                        E.add_constraint(Location(loc, timeStep))
+            E.add_constraint(~Location(loc, timeStep))
     
     
-    # TODO only one of the directions can be true at a time
-    # we want to make sure that movements are done in exactly 1 out of 4 directions
+    # # TODO only one of the directions can be true at a time
+    # # we want to make sure that movements are done in exactly 1 out of 4 directions
     for timeStep in TIMESTEP:
-            for loc in LOCATION:
-                constraint.add_exactly_one(E, MoveUp(timeStep) | MoveDown(timeStep) | MoveLeft(timeStep) | MoveRight(timeStep))
+        arr =  [MoveUp(timeStep), MoveDown(timeStep), MoveLeft(timeStep), MoveRight(timeStep)]
+        constraint.add_exactly_one(E, arr)
                 
     
     
-    # TODO randomly fill one location that is empty (i.e. not in the array GRID) and then update GRID
+    # # TODO randomly fill one location that is empty (i.e. not in the array GRID) and then update GRID
     def RandomFill():
         # we want to randomly fill a location that is empty
         emptyLoc = []
@@ -239,26 +239,28 @@ def example_theory():
         
         return randomLoc
         
-    # print(RandomFill())
-    # we want to randomly fill a location that is empty at a particular timeStep 
-    # for timeStep in TIMESTEP:
-    #     E.add_constraint(Random(RandomFill(), timeStep))
+    # # print(RandomFill())
+    # # we want to randomly fill a location that is empty at a particular timeStep 
+    for timeStep in TIMESTEP:
+        E.add_constraint(Random(RandomFill(), timeStep))
     
-    # we want to make sure that random are mutually exclusive
+    # # we want to make sure that random are mutually exclusive
     for timeStep in TIMESTEP:
         randomList = []
         for loc in LOCATION:
-            if loc in GRID:
-                randomList.append(Random(loc, timeStep))
+            for row in GRID:
+                for col in row:
+                    if loc == col:
+                        randomList.append(Random(loc, timeStep))
         constraint.add_exactly_one(E, randomList)
     
-    # TODO when a location is filled, we cannot randomly generate something in that location
-    # we want to make sure that ~empty -> ~ random
+    # # TODO when a location is filled, we cannot randomly generate something in that location
+    # # we want to make sure that ~empty -> ~ random
     for timeStep in TIMESTEP:
         for loc in LOCATION:
             E.add_constraint(~Location(loc, timeStep) >> ~Random(loc, timeStep))
     
-    # recursive function to move the tile up, also updates the GRID
+    # # recursive function to move the tile up, also updates the GRID
     def UpMove(x,y):
         if x == 0 or GRID[x-1][y] != (0, 0):
             return
@@ -270,7 +272,7 @@ def example_theory():
 
             UpMove(x - 1, y)
     
-    # recursive function to move the tile down, also updates the GRID
+    # # recursive function to move the tile down, also updates the GRID
     def DownMove(x,y):
         if x == 3 or GRID[x+1][y] != (0, 0):
             return
@@ -282,7 +284,7 @@ def example_theory():
 
             DownMove(x + 1, y)
     
-    # recursive function to move the tile left, also updates the GRID
+    # # recursive function to move the tile left, also updates the GRID
     def LeftMove(x,y):
         if y == 0 or GRID[x][y-1] != (0, 0):
             return
@@ -294,7 +296,7 @@ def example_theory():
 
             LeftMove(x, y - 1)
     
-    # recursive function to move the tile right, also updates the GRID
+    # # recursive function to move the tile right, also updates the GRID
     def RightMove(x,y):
         if y == 3 or GRID[x][y+1] != (0, 0):
             return
@@ -351,49 +353,54 @@ def example_theory():
                 E.add_constraint(MoveRight(TIMESTEP[AtTime]))
                 AtTime += 1
         
-    print(f"before moving is {GRID}")
-    Move("U")
-    print(f"after moving up is {GRID}")
-    Move("D")
-    print(f"after moving down is {GRID}")
-    Move("L")
-    print(f"after moving left is {GRID}")
-    Move("R")
-    print(f"after moving right is {GRID}")
-    print(f"current timeStep is {AtTime}")
+    # print(f"before moving is {GRID}")
+    # Move("L")
+    # print(f"after moving up is {GRID}")
+    # # Move("D")
+    # # print(f"after moving down is {GRID}")
+    # # Move("L")
+    # # print(f"after moving left is {GRID}")
+    # # Move("R")
+    # # print(f"after moving right is {GRID}")
+    # # print(f"current timeStep is {AtTime}")
+    # # def is_movable():
+    # #     for timestep in TIMESTEP:
+    # #         for x in range(0,4):
+    # #             for y in range(0,4):
+    # #                 if GRID[x][y] != (0,0) and (x != 0)
     
-    # we want to try move the tiles in a random direction at each timeStep
-    # while AtTime < 16:
-    #     print(f"before moving at direction is {GRID}")
-    #     randomOrientation = ORIENTATION[random.randint(0, 3)]
-    #     Move(randomOrientation) # this would update AtTime inside the function
-    #     print(f"after moving at direction  is {GRID}")
+    # # we want to try move the tiles in a random direction at each timeStep
+    # # while AtTime < 16:
+    # #     print(f"before moving at direction is {GRID}")
+    # #     randomOrientation = ORIENTATION[random.randint(0, 3)]
+    # #     Move(randomOrientation) # this would update AtTime inside the function
+    # #     print(f"after moving at direction  is {GRID}")
         
-    # exactly one of the movement happens at a time and gives us a random object
+    # # exactly one of the movement happens at a time and gives us a random object
     for timeStep in TIMESTEP:
         E.add_constraint(MoveUp(timeStep) | MoveDown(timeStep) | MoveLeft(timeStep) | MoveRight(timeStep) >> Random(RandomFill(), timeStep))
     
     
-    # TODO if loc(x,y,t) and ORIENTATION(orientation, t) are true, then loc(x,y,t+1) is true
-    # if we have location(x, y, t_i) and we move up, then we have location(x-1, y, t_(i+1))
+    # # TODO if loc(x,y,t) and ORIENTATION(orientation, t) are true, then loc(x,y,t+1) is true
+    # # if we have location(x, y, t_i) and we move up, then we have location(x-1, y, t_(i+1))
     for timeStep in range(0, 15):
         for loc in LOCATION:
             if loc[0] != 1:
                 E.add_constraint(Location(loc, TIMESTEP[timeStep]) & MoveUp(TIMESTEP[timeStep]) >> Location((loc[0] - 1, loc[1]), TIMESTEP[timeStep + 1]) & ~Location(loc, TIMESTEP[timeStep]))
     
-    # if we have location(x, y, t_i) and we move down, then we have location(x+1, y, t_(i+1))
+    # # if we have location(x, y, t_i) and we move down, then we have location(x+1, y, t_(i+1))
     for timeStep in range(0, 15):
         for loc in LOCATION:
             if loc[0] != 4:
                 E.add_constraint(Location(loc, TIMESTEP[timeStep]) & MoveUp(TIMESTEP[timeStep]) >> Location((loc[0] + 1, loc[1]), TIMESTEP[timeStep + 1]) & ~Location(loc, TIMESTEP[timeStep]))
                 
-    # if we have location(x, y, t_i) and we move left, then we have location(x, y, t_(i+1))
+    # # if we have location(x, y, t_i) and we move left, then we have location(x, y, t_(i+1))
     for timeStep in range(0, 15):
         for loc in LOCATION:
             if loc[1] != 1:
                 E.add_constraint(Location(loc, TIMESTEP[timeStep]) & MoveUp(TIMESTEP[timeStep]) >> Location((loc[0], loc[1] - 1), TIMESTEP[timeStep + 1]) & ~Location(loc, TIMESTEP[timeStep]))
     
-    # if we have location(x, y, t_i) and we move right, then we have location(x, y, t_(i+1))
+    # # if we have location(x, y, t_i) and we move right, then we have location(x, y, t_(i+1))
     for timeStep in range(0, 15):
         for loc in LOCATION:
             if loc[1] != 4:
@@ -417,13 +424,13 @@ if __name__ == "__main__":
 
     T = example_theory()
     # Don't compile until you're finished adding all your constraints!
-    # T = T.compile()
+    T = T.compile()
     # print(T)
     # After compilation (and only after), you can check some of the properties
     # of your model:
     # print("\nSatisfiable: %s" % T.satisfiable())
     # print("# Solutions: %d" % count_solutions(T))
-    # print("   Solution: %s" % T.solve())
+    print("   Solution: %s" % T.solve())
 
     #E.introspect()
     
