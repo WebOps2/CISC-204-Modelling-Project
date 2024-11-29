@@ -32,6 +32,7 @@ for i in range(1, 5):
 # tempLoc = random.choice(LOCATION)
 # GRID[tempLoc[0]-1][tempLoc[1]-1] = tempLoc
 GRID[1][0] = (2, 1)
+GRID[2][0] = (3, 1)
     
 print(GRID)
 
@@ -120,7 +121,7 @@ class Random(object):
         self.loc = loc
         self.timeStep = timeStep
     def _prop_name(self):
-        return f"{self.loc} randomly filled @ t_{self.timeStep}"
+        return f"{self.loc} randomly filled @ {self.timeStep}"
 
 # @constraint(E)
 
@@ -165,149 +166,79 @@ class Random(object):
 #  This restriction is fairly minimal, and if there is any concern, reach out to the teaching staff to clarify
 #  what the expectations are.
 def example_theory():
-    
+    for row in range(0,4):
+        for col in range(0, 4):
+            if GRID[row][col] == (row +1, col + 1):
+                E.add_constraint(Location((row + 1, col+ 1), 't_1'))
+            elif GRID[row][col] == (0, 0):
+                E.add_constraint(~Location((row + 1, col+ 1), 't_1'))
+                # else:
+                #     E.add_constraint(~Location((row + 1, col+ 1), timeStep))
     # TODO if we are at the edge of the grid, we cannot move in that direction
-    
+    # for row in GRID:
+    #     for col in row:
+    #         print(col)
+    #         if col == (0,0):
+    #             E.add_constraint(Location(col, timeStep[0]))  
     # if the row number (x) is not 1 and the location above (x, y) is true, then the location (x-1, y) is true
-    for timeStep in TIMESTEP:
-        for loc in LOCATION:
-            if loc[0] != 1:
-                E.add_constraint(Location(loc, timeStep) & ~Location((loc[0] - 1, loc[1]), timeStep) >> AbleToMove(loc, 'U', timeStep))
-            elif loc[0] == 1:
-                E.add_constraint(~AbleToMove(loc, 'U', timeStep))
+    # for timeStep in TIMESTEP:
+        # for loc in LOCATION:
+        #     if loc[0] != 1:
+        #         E.add_constraint(Location(loc, 't_1') & ~Location((loc[0] - 1, loc[1]), 't_1') >> AbleToMove(loc, 'U', 't_1'))
+        #     elif loc[0] == 1:
+        #         E.add_constraint(~AbleToMove(loc, 'U', 't_1'))
+    
+    # arr = []    
+    # for row in range(0,4):
+    #     for col in range(0,4):
+    #         if row != 1 and GRID[row][col] == (row+1, col + 1) and GRID(row -1)[col -1] == (0,0):
+    #             arr.append(AbleToMove((row + 1, col + 1), 'U', 't_1'))
 
-    # if the row number (x) is not 4 and the location below (x, y) is true, then the location (x+1, y) is true
-    for timeStep in TIMESTEP:
-        for loc in LOCATION:
-            if loc[0] != 4:
-                E.add_constraint(Location(loc, timeStep) & ~Location((loc[0] + 1, loc[1]), timeStep) >> AbleToMove(loc, 'D', timeStep))
-            elif loc[0] == 4:
-                E.add_constraint(~AbleToMove(loc, 'D', timeStep))
-    
-    # if the col number (y) is not 1 and the location on the left of (x, y) is true, then the location (x, y-1) is true
-    for timeStep in TIMESTEP:
-        for loc in LOCATION:
-            if loc[1] != 1:
-                E.add_constraint(Location(loc, timeStep) & ~Location((loc[0], loc[1] - 1), timeStep) >> AbleToMove(loc, 'L', timeStep))
-            elif loc[1] == 1:
-                E.add_constraint(~AbleToMove(loc, 'L', timeStep))
-    
-    # if the col number (y) is not 4 and the location on the right of (x, y) is true, then the location (x, y+1) is true
-    for timeStep in TIMESTEP:
-        for loc in LOCATION:
-            if loc[1] != 4:
-                E.add_constraint(Location(loc, timeStep) & ~Location((loc[0], loc[1] + 1), timeStep) >> AbleToMove(loc, 'R', timeStep))
-            elif loc[1] == 4:
-                E.add_constraint(~AbleToMove(loc, 'R', timeStep))
-        
             
-    # able_to_move: being able to move is an important thing to know of course, but it may not need to be represented as a proposition. Rather I think it may be better represented as a constraint. A tile is able to move if there is an empty space anywhere along the direction of movement.
-    # essentially we want to determine if the location (x, y) can move in the direction of movement
-    # if the location (x, y) is true and the orientation is up, then the location (x-1, y) is true
-    for timeStep in TIMESTEP:
-        for loc in LOCATION:
-            if loc[0] != 1:
-                E.add_constraint(Location(loc, timeStep) & MoveUp(timeStep) >> Location((loc[0] - 1, loc[1]), timeStep))
-    
-    # # we check if at each timeStep location at (x, y) is empty or not            
-    for timeStep in TIMESTEP:
-            for gridPoint in GRID:
-                for loc in LOCATION:
-                    if loc in gridPoint:
-                        E.add_constraint(Location(loc, timeStep))
-            E.add_constraint(~Location(loc, timeStep))
-    
-    
-    # # TODO only one of the directions can be true at a time
-    # # we want to make sure that movements are done in exactly 1 out of 4 directions
-    for timeStep in TIMESTEP:
-        arr =  [MoveUp(timeStep), MoveDown(timeStep), MoveLeft(timeStep), MoveRight(timeStep)]
-        constraint.add_exactly_one(E, arr)
-                
-    
-    
-    # # TODO randomly fill one location that is empty (i.e. not in the array GRID) and then update GRID
-    def RandomFill():
-        # we want to randomly fill a location that is empty
-        emptyLoc = []
-        for loc in LOCATION:
-            if loc not in GRID:
-                emptyLoc.append(loc)
-        randomLoc = random.choice(emptyLoc)
-        # print(randomLoc)
-        GRID[randomLoc[0]-1][randomLoc[1]-1] = randomLoc
-        
-        return randomLoc
-        
-    # # print(RandomFill())
-    # # we want to randomly fill a location that is empty at a particular timeStep 
-    for timeStep in TIMESTEP:
-        E.add_constraint(Random(RandomFill(), timeStep))
-    
-    # # we want to make sure that random are mutually exclusive
-    for timeStep in TIMESTEP:
-        randomList = []
-        for loc in LOCATION:
-            for row in GRID:
-                for col in row:
-                    if loc == col:
-                        randomList.append(Random(loc, timeStep))
-        constraint.add_exactly_one(E, randomList)
-    
-    # # TODO when a location is filled, we cannot randomly generate something in that location
-    # # we want to make sure that ~empty -> ~ random
-    for timeStep in TIMESTEP:
-        for loc in LOCATION:
-            E.add_constraint(~Location(loc, timeStep) >> ~Random(loc, timeStep))
-    
-    # # recursive function to move the tile up, also updates the GRID
+    for row in range(0,4):
+        for col in range(0,4):
+            if row != 0 and GRID[row][col] == (row +1, col + 1) and GRID[row - 1][col] == (0,0):
+                print((row, col))
+                E.add_constraint(Location((row + 1, col + 1), 't_1') & ~Location((row, col + 1), 't_1') >> AbleToMove((row + 1, col + 1), 'U', 't_1'))
+            else:
+                E.add_constraint(~AbleToMove((row + 1, col + 1), 'U', 't_1'))
+    for row in range(0,4):
+        for col in range(0,4):
+            if row != 3 and GRID[row][col] == (row +1, col + 1):
+                print((row, col))
+                E.add_constraint(Location((row + 1, col + 1), 't_1') & ~Location((row + 2, col + 1), 't_1') >> AbleToMove((row + 1, col + 1), 'D', 't_1'))
+            else:
+                E.add_constraint(~AbleToMove((row + 1, col + 1), 'D', 't_1'))
+    # def moveU(): 
+    #     E.add_constraint(MoveUp('t_1'))
+    for row in range(0,4):
+        for col in range(0,4):
+            if col != 0 and GRID[row][col] == (row +1, col + 1) and GRID[row][col - 1] == (0,0):
+                print((row, col))
+                E.add_constraint(Location((row + 1, col + 1), 't_1') & ~Location((row + 1, col), 't_1') >> AbleToMove((row + 1, col + 1), 'L', 't_1'))
+            else:
+                E.add_constraint(~AbleToMove((row + 1, col + 1), 'L', 't_1'))
+    for row in range(0,4):
+        for col in range(0,4):
+            if col != 3 and GRID[row][col] == (row +1, col + 1) and GRID[row][col + 1] == (0,0):
+                print((row, col))
+                E.add_constraint(Location((row + 1, col + 1), 't_1') & ~Location((row + 1, col + 2), 't_1') >> AbleToMove((row + 1, col + 1), 'R', 't_1'))
+            else:
+                E.add_constraint(~AbleToMove((row + 1, col + 1), 'R', 't_1'))
+            # else:
+            #     E.add_constraint(~Location((row + 1, col + 1), 't_1') & ~Location((row, col + 1), 't_1') >> AbleToMove((row + 1, col + 1), 'U', 't_1'))
+            
+    # for row in range(0,4):
+    #     for col in range(0,4):
+            # E.add_constraint(AbleToMove((row + 1, col + 1), 'U', 't_1') & MoveUp('t_1'))
     def UpMove(x,y):
         if x == 0 or GRID[x-1][y] != (0, 0):
-            return
-        
-        if GRID[x][y] != (0, 0):
+            return 
+        if GRID[x][y] != (0,0):
             # move the tile up and update its coordinates (only updates the x coordinate)
             GRID[x-1][y] = (x, GRID[x][y][1]) 
             GRID[x][y] = (0, 0)
-
             UpMove(x - 1, y)
-    
-    # # recursive function to move the tile down, also updates the GRID
-    def DownMove(x,y):
-        if x == 3 or GRID[x+1][y] != (0, 0):
-            return
-        
-        if GRID[x][y] != (0, 0):
-            # move the tile down and update its coordinates (only updates the x coordinate)
-            GRID[x+1][y] = (x+2, GRID[x][y][1]) 
-            GRID[x][y] = (0, 0)
-
-            DownMove(x + 1, y)
-    
-    # # recursive function to move the tile left, also updates the GRID
-    def LeftMove(x,y):
-        if y == 0 or GRID[x][y-1] != (0, 0):
-            return
-        
-        if GRID[x][y] != (0, 0):
-            # move the tile left and update its coordinates (only updates the y coordinate)
-            GRID[x][y-1] = (GRID[x][y][0], y) 
-            GRID[x][y] = (0, 0)
-
-            LeftMove(x, y - 1)
-    
-    # # recursive function to move the tile right, also updates the GRID
-    def RightMove(x,y):
-        if y == 3 or GRID[x][y+1] != (0, 0):
-            return
-        
-        if GRID[x][y] != (0, 0):
-            # move the tile right and update its coordinates (only updates the y coordinate)
-            GRID[x][y+1] = (GRID[x][y][0], y+2) 
-            GRID[x][y] = (0, 0)
-
-            RightMove(x, y + 1)
-    
     def Move(orientation):
         # make a deep copy of the grid for later comparison
         GridTemp = copy.deepcopy(GRID)
@@ -316,106 +247,267 @@ def example_theory():
         if orientation == "U":
             for x in range(0, 4):
                 for y in range(0, 4):
-                    UpMove(x, y)        
+                    UpMove(x, y)
+            # print(GRID)   
             if GRID != GridTemp:
-                E.add_constraint(Random(RandomFill(), TIMESTEP[AtTime]))
-                E.add_constraint(MoveUp(TIMESTEP[AtTime]))
-                # this version of calling the timeStep work
-                AtTime += 1
+                E.add_constraint(MoveUp('t_1'))
             else:
-                E.add_constraint(~MoveUp(TIMESTEP[AtTime]))
-        elif orientation == "D":
-            for i in range(0, 3):
-                for x in range(0, 4):
-                    for y in range(0, 4):
-                        DownMove(x, y)
-            if GRID != GridTemp:
-                E.add_constraint(Random(RandomFill(), TIMESTEP[AtTime]))
-                E.add_constraint(MoveDown(TIMESTEP[AtTime]))
-                AtTime += 1
-            else:
-                E.add_constraint(~MoveDown(TIMESTEP[AtTime]))
-        elif orientation == "L":
-            for x in range(0, 4):
-                for y in range(0, 4):
-                    LeftMove(x, y)
-            if GRID != GridTemp:
-                E.add_constraint(Random(RandomFill(), TIMESTEP[AtTime]))
-                E.add_constraint(MoveLeft(TIMESTEP[AtTime]))
-                AtTime += 1
-        elif orientation == "R":
-            for i in range(0, 3):
-                for x in range(0, 4):
-                    for y in range(0, 4):
-                        RightMove(x, y)
-            if GRID != GridTemp:
-                E.add_constraint(Random(RandomFill(), TIMESTEP[AtTime]))
-                E.add_constraint(MoveRight(TIMESTEP[AtTime]))
-                AtTime += 1
+                E.add_constraint(~MoveUp(TIMESTEP[AtTime]))  
+    # Move('U')   
+    # print(GRID)
+            
+    # for row in range(1, 5):
+    #     for col in range(1,5):
+    #         if row != 1 and GRID[row-1][col-1] == (row, col):
+    #             # print(GRID[row][col])
+    #             E.add_constraint(MoveUp('t_1') >> Location((row, col), 't_1'))
+                   
+    # for row in range(0,4):
+    #     for col in range(0,4):
+    #         E.add_constraint(AbleToMove((row + 1, col + 1), 'U', 't_1') >> MoveUp('t_1'))
+    # # # # if the row number (x) is not 4 and the location below (x, y) is true, then the location (x+1, y) is true
+    # for timeStep in TIMESTEP:
+    #     for loc in LOCATION:
+    #         if loc[0] != 4:
+    #             E.add_constraint(Location(loc, timeStep) & ~Location((loc[0] + 1, loc[1]), timeStep) >> AbleToMove(loc, 'D', timeStep))
+    #         elif loc[0] == 4:
+    #             E.add_constraint(~AbleToMove(loc, 'D', timeStep))
+    
+    # # # # if the col number (y) is not 1 and the location on the left of (x, y) is true, then the location (x, y-1) is true
+    # for timeStep in TIMESTEP:
+    #     for loc in LOCATION:
+    #         if loc[1] != 1:
+    #             E.add_constraint(Location(loc, timeStep) & ~Location((loc[0], loc[1] - 1), timeStep)x
+    #             E.add_constraint(~AbleToMove(loc, 'L', timeStep))
+    
+    # # # # if the col number (y) is not 4 and the location on the right of (x, y) is true, then the location (x, y+1) is true
+    # for timeStep in TIMESTEP:
+    #     for loc in LOCATION:
+    #         if loc[1] != 4:
+    #             E.add_constraint(Location(loc, timeStep) & ~Location((loc[0], loc[1] + 1), timeStep) >> AbleToMove(loc, 'R', timeStep))
+    #         elif loc[1] == 4:
+    #             E.add_constraint(~AbleToMove(loc, 'R', timeStep))
         
-    # print(f"before moving is {GRID}")
-    # Move("L")
-    # print(f"after moving up is {GRID}")
-    # # Move("D")
-    # # print(f"after moving down is {GRID}")
-    # # Move("L")
-    # # print(f"after moving left is {GRID}")
-    # # Move("R")
-    # # print(f"after moving right is {GRID}")
-    # # print(f"current timeStep is {AtTime}")
-    # # def is_movable():
-    # #     for timestep in TIMESTEP:
-    # #         for x in range(0,4):
-    # #             for y in range(0,4):
-    # #                 if GRID[x][y] != (0,0) and (x != 0)
+            
+    # # # # able_to_move: being able to move is an important thing to know of course, but it may not need to be represented as a proposition. Rather I think it may be better represented as a constraint. A tile is able to move if there is an empty space anywhere along the direction of movement.
+    # # # # essentially we want to determine if the location (x, y) can move in the direction of movement
+    # # # if the location (x, y) is true and the orientation is up, then the location (x-1, y) is true
+    # # for timeStep in TIMESTEP:
+    # #     for loc in LOCATION:
+    # #         if loc[0] != 1:
+    # #             E.add_constraint(Location(loc, timeStep) & MoveUp(timeStep) >> Location((loc[0] - 1, loc[1]), timeStep))
+    #  E.add_constraint(Location((row + 1, col + 1), 't_1') & ~Location((row + 2, col + 1), 't_1') >> AbleToMove((row + 1, col + 1), 'U', 't_1'))
+    # for row in range(0,4):
+    #     for col in range(0,4):
+    #         if GRID[row][col] == (row +1, col + 1) and row != 0:
+    #             E.add_constraint(Location((row + 1, col + 1), 't_1') & AbleToMove((row + 1, col + 1), 'U', 't_1') >> Location((row, col + 1), 't_1'))
     
-    # # we want to try move the tiles in a random direction at each timeStep
-    # # while AtTime < 16:
-    # #     print(f"before moving at direction is {GRID}")
-    # #     randomOrientation = ORIENTATION[random.randint(0, 3)]
-    # #     Move(randomOrientation) # this would update AtTime inside the function
-    # #     print(f"after moving at direction  is {GRID}")
-        
-    # # exactly one of the movement happens at a time and gives us a random object
-    for timeStep in TIMESTEP:
-        E.add_constraint(MoveUp(timeStep) | MoveDown(timeStep) | MoveLeft(timeStep) | MoveRight(timeStep) >> Random(RandomFill(), timeStep))
+    # # # # we check if at each timeStep location at (x, y) is empty or not            
+    # # for timeStep in TIMESTEP:
+    # #         for gridPoint in GRID:
+    # #             for loc in LOCATION:
+    # #                 if loc in gridPoint:
+    # #                     E.add_constraint(Location(loc, timeStep))
+    # #         E.add_constraint(~Location(loc, timeStep))
     
     
-    # # TODO if loc(x,y,t) and ORIENTATION(orientation, t) are true, then loc(x,y,t+1) is true
-    # # if we have location(x, y, t_i) and we move up, then we have location(x-1, y, t_(i+1))
-    for timeStep in range(0, 15):
-        for loc in LOCATION:
-            if loc[0] != 1:
-                E.add_constraint(Location(loc, TIMESTEP[timeStep]) & MoveUp(TIMESTEP[timeStep]) >> Location((loc[0] - 1, loc[1]), TIMESTEP[timeStep + 1]) & ~Location(loc, TIMESTEP[timeStep]))
-    
-    # # if we have location(x, y, t_i) and we move down, then we have location(x+1, y, t_(i+1))
-    for timeStep in range(0, 15):
-        for loc in LOCATION:
-            if loc[0] != 4:
-                E.add_constraint(Location(loc, TIMESTEP[timeStep]) & MoveUp(TIMESTEP[timeStep]) >> Location((loc[0] + 1, loc[1]), TIMESTEP[timeStep + 1]) & ~Location(loc, TIMESTEP[timeStep]))
+    # # # # # TODO only one of the directions can be true at a time
+    # # # # # we want to make sure that movements are done in exactly 1 out of 4 directions
+    # # for timeStep in TIMESTEP:
+    # #     arr =  [MoveUp(timeStep), MoveDown(timeStep), MoveLeft(timeStep), MoveRight(timeStep)]
+    # #     constraint.add_exactly_one(E, arr)
                 
-    # # if we have location(x, y, t_i) and we move left, then we have location(x, y, t_(i+1))
-    for timeStep in range(0, 15):
-        for loc in LOCATION:
-            if loc[1] != 1:
-                E.add_constraint(Location(loc, TIMESTEP[timeStep]) & MoveUp(TIMESTEP[timeStep]) >> Location((loc[0], loc[1] - 1), TIMESTEP[timeStep + 1]) & ~Location(loc, TIMESTEP[timeStep]))
-    
-    # # if we have location(x, y, t_i) and we move right, then we have location(x, y, t_(i+1))
-    for timeStep in range(0, 15):
-        for loc in LOCATION:
-            if loc[1] != 4:
-                E.add_constraint(Location(loc, TIMESTEP[timeStep]) & MoveUp(TIMESTEP[timeStep]) >> Location((loc[0], loc[1] + 1), TIMESTEP[timeStep + 1]) & ~Location(loc, TIMESTEP[timeStep]))
     
     
-    # # Add custom constraints by creating formulas with the variables you created. 
-    # E.add_constraint((a | b) & ~x)
-    # # Implication
-    # E.add_constraint(y >> z)
-    # # Negate a formula
-    # E.add_constraint(~(x & y))
-    # # You can also add more customized "fancy" constraints. Use case: you don't want to enforce "exactly one"
-    # # for every instance of BasicPropositions, but you want to enforce it for a, b, and c.:
-    # constraint.add_exactly_one(E, a, b, c)
+    # # # # # TODO randomly fill one location that is empty (i.e. not in the array GRID) and then update GRID
+    # def RandomFill():
+    #     # we want to randomly fill a location that is empty
+    #     emptyLoc = []
+    #     for loc in LOCATION:
+    #         if loc not in GRID:
+    #             emptyLoc.append(loc)
+    #     randomLoc = random.choice(emptyLoc)
+    #     print(emptyLoc)
+    #     GRID[randomLoc[0]-1][randomLoc[1]-1] = randomLoc
+    #     print(randomLoc)
+    #     return randomLoc
+    
+    # # # # # we want to make sure that random are mutually exclusive
+    # for timeStep in TIMESTEP:
+    #     randomList = []
+    #     for loc in LOCATION:
+    #         for row in GRID:
+    #             for col in row:
+    #                 if loc == col:
+    #                     randomList.append(Random(loc, timeStep))
+    #     constraint.add_exactly_one(E, randomList)
+    
+    # # # # # TODO when a location is filled, we cannot randomly generate something in that location
+    # # # # # we want to make sure that ~empty -> ~ random
+    # for timeStep in TIMESTEP:
+    #     for loc in LOCATION:
+    #         E.add_constraint(~Location(loc, timeStep) >> ~Random(loc, timeStep))
+    
+    # # # # recursive function to move the tile up, also updates the GRID
+    # def UpMove(x,y):
+    #     if x == 0 or GRID[x-1][y] != (0, 0):
+    #         return 
+    #     if GRID[x][y] != (0,0):
+    #         # move the tile up and update its coordinates (only updates the x coordinate)
+    #         GRID[x-1][y] = (x, GRID[x][y][1]) 
+    #         GRID[x][y] = (0, 0)
+    #         UpMove(x - 1, y)
+    
+    # # # recursive function to move the tile down, also updates the GRID
+    # def DownMove(x,y):
+    #     if x == 3 or GRID[x+1][y] != (0, 0):
+    #         return
+        
+    #     if GRID[x][y] != (0, 0):
+    #         # move the tile down and update its coordinates (only updates the x coordinate)
+    #         GRID[x+1][y] = (x+2, GRID[x][y][1]) 
+    #         GRID[x][y] = (0, 0)
+
+    #         DownMove(x + 1, y)
+    
+    # # # # recursive function to move the tile left, also updates the GRID
+    # def LeftMove(x,y):
+    #     if y == 0 or GRID[x][y-1] != (0, 0):
+    #         return
+        
+    #     if GRID[x][y] != (0, 0):
+    #         # move the tile left and update its coordinates (only updates the y coordinate)
+    #         GRID[x][y-1] = (GRID[x][y][0], y) 
+    #         GRID[x][y] = (0, 0)
+
+    #         LeftMove(x, y - 1)
+    
+    # # # recursive function to move the tile right, also updates the GRID
+    # def RightMove(x,y):
+    #     if y == 3 or GRID[x][y+1] != (0, 0):
+    #         return
+        
+    #     if GRID[x][y] != (0, 0):
+    #         # move the tile right and update its coordinates (only updates the y coordinate)
+    #         GRID[x][y+1] = (GRID[x][y][0], y+2) 
+    #         GRID[x][y] = (0, 0)
+
+    #         RightMove(x, y + 1)
+    
+    # def Move(orientation):
+    #     # make a deep copy of the grid for later comparison
+    #     GridTemp = copy.deepcopy(GRID)
+    #     global AtTime
+        
+    #     if orientation == "U":
+    #         for x in range(0, 4):
+    #             for y in range(0, 4):
+    #                 UpMove(x, y)
+    #         print(GRID)        
+    #         if GRID != GridTemp:
+    #             E.add_constraint(Random(RandomFill(), TIMESTEP[AtTime]))
+    #             E.add_constraint(MoveUp(TIMESTEP[AtTime]))
+    #             # this version of calling the timeStep work
+    #             AtTime += 1
+    #         else:
+    #             E.add_constraint(~MoveUp(TIMESTEP[AtTime]))
+    #     elif orientation == "D":
+    #         for x in range(0, 4):
+    #             for y in range(0, 4):
+    #                 DownMove(x, y)
+    #         print(GRID) 
+    #         if GRID != GridTemp:
+    #             E.add_constraint(Random(RandomFill(), TIMESTEP[AtTime]))
+    #             E.add_constraint(MoveDown(TIMESTEP[AtTime]))
+    #             AtTime += 1
+    #         else:
+    #             E.add_constraint(~MoveDown(TIMESTEP[AtTime]))
+    #     elif orientation == "L":
+    #         for x in range(0, 4):
+    #             for y in range(0, 4):
+    #                 LeftMove(x, y)
+    #         print(GRID) 
+    #         if GRID != GridTemp:
+    #             E.add_constraint(Random(RandomFill(), TIMESTEP[AtTime]))
+    #             E.add_constraint(MoveLeft(TIMESTEP[AtTime]))
+    #             AtTime += 1
+    #     elif orientation == "R":
+    #         for i in range(0, 3):
+    #             for x in range(0, 4):
+    #                 for y in range(0, 4):
+    #                     RightMove(x, y)
+    #         print(GRID) 
+    #         if GRID != GridTemp:
+    #             E.add_constraint(Random(RandomFill(), TIMESTEP[AtTime]))
+    #             E.add_constraint(MoveRight(TIMESTEP[AtTime]))
+    #             AtTime += 1
+    # RandomFill()  
+    # print(f"before moving is {GRID}")
+    # Move("U")
+    # print(GRID)
+    # print(f"after moving up is {GRID}")
+    # Move("D")
+    # print(f"after moving down is {GRID}")
+    # Move("L")
+    # print(f"after moving left is {GRID}")
+    # # # Move("R")
+    # # # print(f"after moving right is {GRID}")
+    # # # print(f"current timeStep is {AtTime}")
+    # # # def is_movable():
+    # # #     for timestep in TIMESTEP:
+    # # #         for x in range(0,4):
+    # # #             for y in range(0,4):
+    # # #                 if GRID[x][y] != (0,0) and (x != 0)
+    
+    # # # we want to try move the tiles in a random direction at each timeStep
+    # num = 1
+    # while AtTime < 16:
+    #     print(f"{num}. before moving at direction is {GRID} and our timestep is {AtTime} \n")
+    #     randomOrientation = ORIENTATION[random.randint(0, 3)]
+    #     Move(randomOrientation) # this would update AtTime inside the function
+    #     print(f"after moving at direction {randomOrientation} is {GRID} and out timestep is {AtTime} \n\n")
+    #     num = num + 1
+        
+    # # # exactly one of the movement happens at a time and gives us a random object
+    # for timeStep in TIMESTEP:
+    #     E.add_constraint(MoveUp(timeStep) | MoveDown(timeStep) | MoveLeft(timeStep) | MoveRight(timeStep) >> Random(RandomFill(), timeStep))
+    
+    
+    # # # # TODO if loc(x,y,t) and ORIENTATION(orientation, t) are true, then loc(x,y,t+1) is true
+    # # # # if we have location(x, y, t_i) and we move up, then we have location(x-1, y, t_(i+1))
+    # for timeStep in range(0, 15):
+    #     for loc in LOCATION:
+    #         if loc[0] != 1:
+    #             E.add_constraint(Location(loc, TIMESTEP[timeStep]) & MoveUp(TIMESTEP[timeStep]) >> Location((loc[0] - 1, loc[1]), TIMESTEP[timeStep + 1]) & ~Location(loc, TIMESTEP[timeStep]))
+    
+    # # # if we have location(x, y, t_i) and we move down, then we have location(x+1, y, t_(i+1))
+    # for timeStep in range(0, 15):
+    #     for loc in LOCATION:
+    #         if loc[0] != 4:
+    #             E.add_constraint(Location(loc, TIMESTEP[timeStep]) & MoveUp(TIMESTEP[timeStep]) >> Location((loc[0] + 1, loc[1]), TIMESTEP[timeStep + 1]) & ~Location(loc, TIMESTEP[timeStep]))
+                
+    # # # if we have location(x, y, t_i) and we move left, then we have location(x, y, t_(i+1))
+    # for timeStep in range(0, 15):
+    #     for loc in LOCATION:
+    #         if loc[1] != 1:
+    #             E.add_constraint(Location(loc, TIMESTEP[timeStep]) & MoveUp(TIMESTEP[timeStep]) >> Location((loc[0], loc[1] - 1), TIMESTEP[timeStep + 1]) & ~Location(loc, TIMESTEP[timeStep]))
+    
+    # # # if we have location(x, y, t_i) and we move right, then we have location(x, y, t_(i+1))
+    # for timeStep in range(0, 15):
+    #     for loc in LOCATION:
+    #         if loc[1] != 4:
+    #             E.add_constraint(Location(loc, TIMESTEP[timeStep]) & MoveUp(TIMESTEP[timeStep]) >> Location((loc[0], loc[1] + 1), TIMESTEP[timeStep + 1]) & ~Location(loc, TIMESTEP[timeStep]))
+    
+    
+    # # # Add custom constraints by creating formulas with the variables you created. 
+    # # E.add_constraint((a | b) & ~x)
+    # # # Implication
+    # # E.add_constraint(y >> z)
+    # # # Negate a formula
+    # # E.add_constraint(~(x & y))
+    # # # You can also add more customized "fancy" constraints. Use case: you don't want to enforce "exactly one"
+    # # # for every instance of BasicPropositions, but you want to enforce it for a, b, and c.:
+    # # constraint.add_exactly_one(E, a, b, c)
 
     return E
 
@@ -428,9 +520,21 @@ if __name__ == "__main__":
     # print(T)
     # After compilation (and only after), you can check some of the properties
     # of your model:
+    S = T.solve()
+    print(S)
+    if S:
+        t = set()
+        for k in S:
+            if S[k]:
+                # print(k)
+                t.add(str(k))
+        print("\n".join(t))
+        # print('Yay')
+    else:
+        print('Aw man')
     # print("\nSatisfiable: %s" % T.satisfiable())
     # print("# Solutions: %d" % count_solutions(T))
-    print("   Solution: %s" % T.solve())
+    # print("   Solution: %s" % T.solve())
 
     #E.introspect()
     
