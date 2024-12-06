@@ -217,7 +217,6 @@ def example_theory():
             if row != 3 and GRID[row][col] == (row +1, col + 1)  and GRID[row + 1][col] == (0,0):
                 E.add_constraint(Location((row + 1, col + 1), TIMESTEP[AtTime]) & ~Location((row + 2, col + 1), TIMESTEP[AtTime]) >> AbleToMove((row + 1, col + 1), 'D', TIMESTEP[AtTime]))
             
-                # E.add_constraint(AbleToMove((row + 1, col + 1), 'D', TIMESTEP[AtTime]) & MoveDown(TIMESTEP[AtTime])
     # def moveU(): 
     #     E.add_constraint(MoveUp('t_1'))
     for row in range(0,4):
@@ -410,7 +409,7 @@ def example_theory():
 if __name__ == "__main__":
     # l = 0
     generate_tile(1, 1)
-    print(GRID)
+    # print(GRID)
     # if move == 2
     
     # T = example_theory()
@@ -443,17 +442,16 @@ if __name__ == "__main__":
                         s = True
                         t.add(str(k))
                 # l += 1
-                if s:       
-                    print(f"\n\n {GRID} ")                  
-                # print("\n".join(t))
-                # print('Yay')
+                if s and AtTime < 15:       
+                    print(f"\n\n Our Grid updated: {GRID} ")                  
             else:
                 print('Aw man')
+        print("\nSatisfiable: %s" % T.satisfiable())
+        print("# Solutions: %d" % count_solutions(T))
     run_2048_simulation()
         
         
-        # print("\nSatisfiable: %s" % T.satisfiable())
-        # print("# Solutions: %d" % count_solutions(T))
+    
         # print("   Solution: %s" % T.solve())
 
     #E.introspect()
