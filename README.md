@@ -3,7 +3,7 @@
 Welcome to our project modeling the 2048 game! We focus on the mechanics of the movements of the tiles only without considering merges of tiles. 
 
 The idea of the classical game of 2048 is that you move and merge tiles with equivalent values to generate tiles with larger values. We do not consider the merging functions, so we do not consider the numbers appearing on each tiles either. We are interested in only the movement mechanics of the tiles. The grid on which you can move the tile is a 4 * 4 grid. 
-We want to start from a grid with only one randomly generated tile on it, and let the SAT solver determine in which of the four directions it can move and chooses a movable direction to implement the movement. We use a parameter `timeStep to indicate our steps of movements. Since the grid starts with 1 tile at `timeStep` is `t_0`, we expect the grid to be filled after 15 valid movements. 
+We want to start from a grid with only one randomly generated tile on it, and let the SAT solver determine in which of the four directions it can move and chooses a movable direction to implement the movement. We use a parameter `timeStep` to indicate our steps of movements. Since the grid starts with 1 tile at `timeStep` is `t_0`, we expect the grid to be filled after 15 valid movements. 
 
 ## Requirements
 - `nnf`
