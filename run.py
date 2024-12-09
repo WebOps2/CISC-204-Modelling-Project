@@ -139,10 +139,15 @@ def test_col_movement(col, orientation):
         GRID[i][col - 1] = (i+1, col)
         E.add_constraint(AbleToMove((i + 1, col), orientation, 't_0'))
 
-def TestRandom(row, col):
-    GenerateTile(row, col)
-    E.add_constraint(Location((row, col), 't_0'))
-    E.add_constraint(Random((row, col), 't_1'))
+# test if an empty grid can move (should not be able to move in any direction as there are no tiles)
+def test_empty_grid_can_move():
+    for row in range(0,4):
+        for col in range(0,4):
+            GenerateTile(0, 0)
+    E.add_constraint(MoveUp('t_0'))
+    E.add_constraint(MoveDown('t_0'))
+    E.add_constraint(MoveLeft('t_0'))
+    E.add_constraint(MoveRight('t_0'))
 
 
 # the function where we will add all our constraints
@@ -385,22 +390,24 @@ def example_theory():
 
 if __name__ == "__main__":
 
-    GenerateTile(4, 2) # this will generate a grid with a tile at location (4, 2), you can initialize the grid with whatever first tile you want
-    # print(GRID)
-    
     """
     uncomment the following lines below only when you want to use the above test functions
-   
-    test_at_location(3,1)
-    test_row_movement(1, 'D')
-    test_col_movement(2, 'L')
-    test_random(2,2)
     
     T = example_theory()
+    
+    test_at_location(3,1) 
+    test_row_movement(1, 'D') # you can test whatever row number and orientation you want
+    test_col_movement(2, 'L') # you can test whatever column number and orientation you want
+    test_random(2,2) 
+    test_empty_grid_can_move()
+    
     T = T.compile()
     S = T.solve()
     print(S)
     """
+    
+    GenerateTile(4, 2) # this will generate a grid with a tile at location (4, 2), you can initialize the grid with whatever first tile you want
+    # print(GRID)
     
     # function to run the 2048 simulation
     def run_2048_simulation():
